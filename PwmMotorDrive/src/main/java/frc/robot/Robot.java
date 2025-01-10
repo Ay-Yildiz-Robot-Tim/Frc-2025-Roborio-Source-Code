@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.motorcontrol.PWMVictorSPX;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.subsystems.PlatformMovement;
 
 /**
  * The methods in this class are called automatically corresponding to each mode, as described in
@@ -29,13 +30,17 @@ public class Robot extends TimedRobot {
     // autonomous chooser on the dashboard.
     m_robotContainer = new RobotContainer();
   }
+  //motor sürücü pwm tanımlamaları
   private PWMVictorSPX leftFrontMotor;
   private PWMVictorSPX leftBackMotor;
   private PWMVictorSPX rightFrontMotor;
   private PWMVictorSPX  rightBackMotor;
   
+  // joyistick tanımlamaları
   private Joystick joystick;
 
+  //movent hesaplama kütüphanesi tanımlaması
+  private PlatformMovement platformMovent;
   /**
    * This function is called every 20 ms, no matter the mode. Use this for items like diagnostics
    * that you want ran during disabled, autonomous, teleoperated and test.
@@ -52,9 +57,10 @@ public class Robot extends TimedRobot {
     rightBackMotor = new PWMVictorSPX(Constants.PwmChannelContants.rightBackMotosPwmChannel);  // PWM port right back motor 
 
     //joyistic tanımlaması
-    
     joystick = new Joystick(0);  // Joystick 0. portta
     
+    //movent classını projeye dahil etme
+    platformMovent = new PlatformMovement();
   }
 
 
@@ -107,33 +113,15 @@ public class Robot extends TimedRobot {
   //joyisctic verilerini oku
   double joystickX = joystick.getX();
   double joystickY = joystick.getY();
-    
-  //gelicek hız hesaplama
-  double leftMotorSpeed = joystickY;
-  double rightMotorSpeed = joystickY;
+  
+  //kütüphane verileri okuma
+  double motorSpeed[] = platformMovent.PowerCalc(joystickX, joystickY);
+  
+  //kolay anlaşılması için değişkenlere atma
+  double leftMotorSpeed = motorSpeed[0];
+  double rightMotorSpeed = motorSpeed[1];
 
-  if(joystickY > 0 || joystickY < 0){
-    if(joystickX > 0){
-      leftMotorSpeed = joystickY;
-      rightMotorSpeed = (joystickY * joystickX) / 100;
-    }
-
-    else if(joystickY < 0){
-      leftMotorSpeed = (joystickY * joystickX) / 100;
-      rightMotorSpeed =  joystickY;
-    }
-  }
-  else{
-    if(joystickX < 0){
-      rightMotorSpeed = -rightMotorSpeed;
-      leftMotorSpeed = leftMotorSpeed;
-    }
-    else{
-      rightMotorSpeed = rightMotorSpeed;
-      leftMotorSpeed = -leftMotorSpeed;
-    }
-  }
-    
+  //motorlara hız verme
   leftBackMotor.set(leftMotorSpeed);
   leftFrontMotor.set(leftMotorSpeed);
   rightBackMotor.set(rightMotorSpeed);

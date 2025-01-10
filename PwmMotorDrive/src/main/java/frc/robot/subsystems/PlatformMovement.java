@@ -2,7 +2,7 @@ package frc.robot.subsystems;
 
 public class PlatformMovement {
     
-    double[] PowerCalc(int powerX, int powerY) {//index 0 right motors index 1 left motors
+    public double[] PowerCalc(double powerX, double powerY) {//index 0 right motors index 1 left motors
         //gelicek hız hesaplama
         double leftMotorSpeed = powerY;
         double rightMotorSpeed = powerY;
@@ -31,7 +31,7 @@ public class PlatformMovement {
         return new double[]{rightMotorSpeed, leftMotorSpeed};
     }
 
-    double[] PowerCalc(int targetAngle, int currentRPM, int targetRPM, int currentAngle) {
+    public double[] PowerCalc(int targetAngle, int currentRPM, int targetRPM, int currentAngle) {
         double[] motorPowers = {0.0, 0.0};
     
         // Kazanç Sabitleri (test ile ayarlanabilir)
