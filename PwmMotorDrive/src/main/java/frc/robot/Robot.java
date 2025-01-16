@@ -118,10 +118,10 @@ public class Robot extends TimedRobot {
   double motorSpeed[] = platformMovent.PowerCalc(joystickX, joystickY);
   
   //kolay anlaşılması için değişkenlere atma
+  double rightMotorSpeed = motorSpeed[0];
   double leftMotorSpeed = motorSpeed[0];
-  double rightMotorSpeed = motorSpeed[1];
 
-  //motorlara hız verme
+  //motorlara pwm ayarlama
   leftBackMotor.set(leftMotorSpeed);
   leftFrontMotor.set(leftMotorSpeed);
   rightBackMotor.set(rightMotorSpeed);

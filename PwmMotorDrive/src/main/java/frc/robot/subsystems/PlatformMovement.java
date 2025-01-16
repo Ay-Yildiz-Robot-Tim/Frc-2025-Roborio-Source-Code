@@ -3,32 +3,31 @@ package frc.robot.subsystems;
 public class PlatformMovement {
     
     public double[] PowerCalc(double powerX, double powerY) {//index 0 right motors index 1 left motors
-        //gelicek hız hesaplama
-        double leftMotorSpeed = powerY;
-        double rightMotorSpeed = powerY;
+        double leftPowerMotors = powerY;
+        double rightPowerMotors = powerY;
 
-        if(powerY > 0 || powerY < 0){
-            if(powerX > 0){
-            leftMotorSpeed = powerY;
-            rightMotorSpeed = (powerY * powerX) / 100;
-            }
+        if(powerY < -0.1){//tank dönüşü için değer aralığı olması için bir aralık berlirleme
+            leftPowerMotors = -powerY;//motorların ters bağlandığı ve benim joyistickden gelen değerimin ileri için 0 ve -1 arasında bir değer aldığından olayı ileri gitmesi sol motorlara pozitif değer gitmesi için - ile çarparak negatif değer veriyorum
 
-            else if(powerY < 0){
-            leftMotorSpeed = (powerY * powerX) / 100;
-            rightMotorSpeed =  powerY;
-            }
         }
+        else if(powerY > 0.1){
+            rightPowerMotors = -powerY;//sağ motor ters bağlandığı için geri gitmesi için negatid değer almalı
+        }
+
         else{
-            if(powerX < 0){
-            rightMotorSpeed = -rightMotorSpeed;
-            leftMotorSpeed = leftMotorSpeed;
+            if(powerX < -0.1){
+                rightPowerMotors = -powerX;
+                leftPowerMotors = -powerX;
             }
-            else{
-            rightMotorSpeed = rightMotorSpeed;
-            leftMotorSpeed = -leftMotorSpeed;
+            else if(powerX > 0.1){
+                rightPowerMotors = powerX;
+                leftPowerMotors = powerX;
             }
         }
-        return new double[]{rightMotorSpeed, leftMotorSpeed};
+        
+
+
+        return new double[]{rightPowerMotors, leftPowerMotors};
     }
 
     public double[] PowerCalc(int targetAngle, int currentRPM, int targetRPM, int currentAngle) {
