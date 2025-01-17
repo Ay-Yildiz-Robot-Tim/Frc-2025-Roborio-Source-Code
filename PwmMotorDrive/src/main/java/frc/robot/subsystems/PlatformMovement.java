@@ -11,7 +11,7 @@ public class PlatformMovement {
 
         }
         else if(powerY > 0.1){
-            rightPowerMotors = -powerY;//sağ motor ters bağlandığı için geri gitmesi için negatid değer almalı
+            leftPowerMotors = -powerY;//sağ motor ters bağlandığı için geri gitmesi için negatid değer almalı
         }
 
         else{
@@ -24,8 +24,6 @@ public class PlatformMovement {
                 leftPowerMotors = powerX;
             }
         }
-        
-
 
         return new double[]{rightPowerMotors, leftPowerMotors};
     }
