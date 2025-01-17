@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import java.io.Serial;
+
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.motorcontrol.PWMVictorSPX;
@@ -111,17 +113,17 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
   //joyisctic verilerini oku
-  double joystickX = joystick.getRawAxis(4);
-  double joystickY = joystick.getRawAxis(1);
-  
-
+  double joystickBack = joystick.getRawAxis(3);
+  double joystickFront= joystick.getRawAxis(2);
+  double joyistickX = joystick.getRawAxis(4);
+  System.out.println(joystickBack);
   //kütüphane verileri okuma
-  double motorSpeed[] = platformMovent.PowerCalc(joystickX, joystickY);
+  double motorSpeed[] = platformMovent.PowerCalc(joystickFront, joystickBack, joyistickX);
   
   //kolay anlaşılması için değişkenlere atma
   double rightMotorSpeed = motorSpeed[0];
   double leftMotorSpeed = motorSpeed[1];
-
+  
   //motorlara pwm ayarlama
   leftBackMotor.set(leftMotorSpeed);
   leftFrontMotor.set(leftMotorSpeed);

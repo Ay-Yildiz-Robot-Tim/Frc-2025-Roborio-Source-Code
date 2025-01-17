@@ -4,37 +4,48 @@ import com.fasterxml.jackson.databind.cfg.EnumFeature;
 
 public class PlatformMovement {
     
-    public double[] PowerCalc(double powerX, double powerY) {//index 0 right motors index 1 left motors
-        double leftPowerMotors = powerY;
-        double rightPowerMotors = powerY;
+    public double[] PowerCalc(double powerFront, double powerBack, double axisX) {//index 0 right motors index 1 left motors
+        double leftPowerMotors = 0;
+        double rightPowerMotors = 0;
 
-        if(powerY < -0.1){//tank dönüşü için değer aralığı olması için bir aralık berlirleme
-            if(powerX > 0.1){
-                rightPowerMotors = -powerY * 0.5; 
+        if(powerFront > .1){
+            if(axisX > .1){
+                leftPowerMotors = powerFront * .5;
+                rightPowerMotors = -powerFront;
             }
-            else if(powerX < -0.1){
-                rightPowerMotors = -powerY;
-                leftPowerMotors =   powerY * 0.5; 
+            else if(axisX < -.1){
+                leftPowerMotors = powerFront;
+                rightPowerMotors = -powerFront * .5;
             }
-            else
-            rightPowerMotors = -powerY;//motorların ters bağlandığı ve benim joyistickden gelen değerimin ileri için 0 ve -1 arasında bir değer aldığından olayı ileri gitmesi sol motorlara pozitif değer gitmesi için - ile çarparak negatif değer veriyorum
-
+            else{
+                leftPowerMotors = powerFront;
+                rightPowerMotors = -powerFront;
+            }
         }
-        else if(powerY > 0.1){
-                rightPowerMotors = -powerY;//sağ motor ters bağlandığı için geri gitmesi için negatid değer almalı
+        else if(powerBack > .1){
+            if(axisX > .1){
+                leftPowerMotors = -powerBack;
+                rightPowerMotors = powerBack * .5;
+            }
+            else if(axisX < -.1){
+                leftPowerMotors = -powerBack * .5;
+                rightPowerMotors = powerBack;
+            }
+            else{
+                leftPowerMotors = -powerBack;
+                rightPowerMotors = powerBack;
+            }
         }
-
         else{
-            if(powerX < -0.1){//tank dönüşünde sola gidiyorsa
-                rightPowerMotors = -powerX;// sağ motor ters - de ileri gider + değerde geri bu koşulda motor her halükarda ileri gidecek
-                leftPowerMotors = -powerX;//sol motor - de geri gideceği için bu koşulda motor geriye gidecektir
+            if(axisX > .1){
+                leftPowerMotors = -axisX;
+                rightPowerMotors = -axisX;
             }
-            else if(powerX > 0.1){//tank dönüşünde sağa gidiyorsa
-                rightPowerMotors = -powerX;
-                leftPowerMotors = -powerX;
+            else if(axisX < -.1){
+                leftPowerMotors = -axisX;
+                rightPowerMotors = -axisX;
             }
         }
-
         return new double[]{rightPowerMotors, leftPowerMotors};
     }
 
