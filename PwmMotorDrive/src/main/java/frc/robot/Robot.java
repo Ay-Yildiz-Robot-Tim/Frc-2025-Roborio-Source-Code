@@ -111,15 +111,16 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
   //joyisctic verilerini oku
-  double joystickX = joystick.getX();
-  double joystickY = joystick.getY();
+  double joystickX = joystick.getRawAxis(4);
+  double joystickY = joystick.getRawAxis(1);
   
+
   //kütüphane verileri okuma
   double motorSpeed[] = platformMovent.PowerCalc(joystickX, joystickY);
   
   //kolay anlaşılması için değişkenlere atma
   double rightMotorSpeed = motorSpeed[0];
-  double leftMotorSpeed = motorSpeed[0];
+  double leftMotorSpeed = motorSpeed[1];
 
   //motorlara pwm ayarlama
   leftBackMotor.set(leftMotorSpeed);
