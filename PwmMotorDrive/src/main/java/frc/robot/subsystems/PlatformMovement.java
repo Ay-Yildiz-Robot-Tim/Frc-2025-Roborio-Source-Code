@@ -16,8 +16,8 @@ public class PlatformMovement {
 
         else{
             if(powerX < -0.1){//tank dönüşünde sola gidiyorsa
-                rightPowerMotors = -powerX;// sağ motor ters - de ileri gider + değerde geri bu koşulda motor her halükarda ileri gidecek
-                leftPowerMotors = -powerX;//sol motor - de geri gideceği için bu koşulda motor geriye gidecektir
+                rightPowerMotors = powerX;// sağ motor ters - de ileri gider + değerde geri bu koşulda motor her halükarda ileri gidecek
+                leftPowerMotors = powerX;//sol motor - de geri gideceği için bu koşulda motor geriye gidecektir
             }
             else if(powerX > 0.1){//tank dönüşünde sağa gidiyorsa
                 rightPowerMotors = powerX;
