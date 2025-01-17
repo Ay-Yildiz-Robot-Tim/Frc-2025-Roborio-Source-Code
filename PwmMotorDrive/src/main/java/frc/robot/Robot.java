@@ -6,12 +6,23 @@ package frc.robot;
 
 import java.io.Serial;
 
+import javax.lang.model.util.ElementScanner14;
+
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.motorcontrol.PWMVictorSPX;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.PlatformMovement;
+
+
+class YC_Time {
+static int myTimeStamp;
+static int myRunTime;
+static int isRunning;
+}
 
 /**
  * The methods in this class are called automatically corresponding to each mode, as described in
@@ -87,15 +98,54 @@ public class Robot extends TimedRobot {
   public void autonomousInit() {
     m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
+    YC_Time.myTimeStamp = 0;
+    YC_Time.myRunTime = 0;
+    YC_Time.isRunning = 1;
+
+    double A_R_Axis;
+    double A_L_Axis;
+    double A_X_Axis;
+    double A_MotorSpeed[];
+    double A_LeftSpeed;
+    double A_RightSpeed;
+
     // schedule the autonomous command (example)
     if (m_autonomousCommand != null) {
       m_autonomousCommand.schedule();
     }
+
+    //while(true)
+    //{
+      A_R_Axis = 0.2;
+      A_L_Axis = 0;
+      A_X_Axis = 0;
+      A_MotorSpeed = platformMovent.PowerCalc(A_R_Axis, A_L_Axis, A_X_Axis);
+      A_LeftSpeed = A_MotorSpeed[1];
+      A_RightSpeed = A_MotorSpeed[0];
+      leftBackMotor.set(A_LeftSpeed);
+      leftFrontMotor.set(A_LeftSpeed);
+      rightBackMotor.set(A_RightSpeed);
+      rightFrontMotor.set(A_RightSpeed);
+      Timer.delay(15);
+      A_R_Axis = 0;
+      A_L_Axis = 0;
+      A_X_Axis = 0;
+      A_MotorSpeed = platformMovent.PowerCalc(A_R_Axis, A_L_Axis, A_X_Axis);
+      A_LeftSpeed = A_MotorSpeed[1];
+      A_RightSpeed = A_MotorSpeed[0];
+      leftBackMotor.set(A_LeftSpeed);
+      leftFrontMotor.set(A_LeftSpeed);
+      rightBackMotor.set(A_RightSpeed);
+      rightFrontMotor.set(A_RightSpeed);
+    //}
   }
 
   /** This function is called periodically during autonomous. */
   @Override
-  public void autonomousPeriodic() {}
+  public void autonomousPeriodic() {
+  
+
+  }
 
   @Override
   public void teleopInit() {
@@ -116,7 +166,7 @@ public class Robot extends TimedRobot {
   double joystickBack = joystick.getRawAxis(3);
   double joystickFront= joystick.getRawAxis(2);
   double joyistickX = joystick.getRawAxis(4);
-  System.out.println(joystickBack);
+  //System.out.println(joystickBack);
   //kütüphane verileri okuma
   double motorSpeed[] = platformMovent.PowerCalc(joystickFront, joystickBack, joyistickX);
   
@@ -129,6 +179,8 @@ public class Robot extends TimedRobot {
   leftFrontMotor.set(leftMotorSpeed);
   rightBackMotor.set(rightMotorSpeed);
   rightFrontMotor.set(rightMotorSpeed);
+
+  //System.out.println(Timer.getTimestamp());
   }
 
   @Override
