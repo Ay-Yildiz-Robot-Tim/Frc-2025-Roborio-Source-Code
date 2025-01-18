@@ -7,18 +7,21 @@ public class PlatformMovement {
     public double[] PowerCalc(double powerFront, double powerBack, double axisX) {//index 0 right motors index 1 left motors
         double leftPowerMotors = 0;
         double rightPowerMotors = 0;
-
+        
+        //rt buttonundan gelen hızın ileri olarak atanması
         if(powerFront > .1){
+            //default atanması gereken değer
             leftPowerMotors = powerFront;
             rightPowerMotors = -powerFront;
 
+            //açısal dönüş koşulları
             if(axisX > .1){
-                leftPowerMotors = powerFront * .5;
+                leftPowerMotors = powerFront * (axisX / 10);
                 rightPowerMotors = -powerFront;
             }
             else if(axisX < -.1){
                 leftPowerMotors = powerFront;
-                rightPowerMotors = -powerFront * .5;
+                leftPowerMotors = powerFront * (axisX / 10);
             }
         }
         else if(powerBack > .1){
@@ -27,10 +30,10 @@ public class PlatformMovement {
 
             if(axisX > .1){
                 leftPowerMotors = -powerBack;
-                rightPowerMotors = powerBack * .5;
+                rightPowerMotors = powerBack * (axisX / 10);
             }
             else if(axisX < -.1){
-                leftPowerMotors = -powerBack * .5;
+                leftPowerMotors = -powerBack * (axisX / 10);
                 rightPowerMotors = powerBack;
             }
         }
@@ -44,6 +47,7 @@ public class PlatformMovement {
                 rightPowerMotors = -axisX;
             }
         }
+
         return new double[]{rightPowerMotors, leftPowerMotors};
     }
 
