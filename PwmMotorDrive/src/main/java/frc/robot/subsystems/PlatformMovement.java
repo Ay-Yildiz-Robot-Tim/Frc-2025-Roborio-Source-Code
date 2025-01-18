@@ -20,8 +20,6 @@ public class PlatformMovement {
                 leftPowerMotors = powerFront;
                 rightPowerMotors = -powerFront * .5;
             }
-            
-            return new double[]{rightPowerMotors, leftPowerMotors};
         }
         else if(powerBack > .1){
             leftPowerMotors = -powerBack;
@@ -35,7 +33,6 @@ public class PlatformMovement {
                 leftPowerMotors = -powerBack * .5;
                 rightPowerMotors = powerBack;
             }
-            return new double[]{rightPowerMotors, leftPowerMotors};
         }
         else{
             if(axisX > .1){
