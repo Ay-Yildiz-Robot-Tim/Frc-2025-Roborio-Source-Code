@@ -16,12 +16,12 @@ public class PlatformMovement {
 
             //açısal dönüş koşulları
             if(axisX > .1){
-                leftPowerMotors = powerFront * (axisX / 10);
+                leftPowerMotors = powerFront * axisX;
                 rightPowerMotors = -powerFront;
             }
             else if(axisX < -.1){
                 leftPowerMotors = powerFront;
-                leftPowerMotors = powerFront * (axisX / 10);
+                rightPowerMotors = -powerFront * axisX;
             }
         }
         else if(powerBack > .1){
@@ -30,10 +30,10 @@ public class PlatformMovement {
 
             if(axisX > .1){
                 leftPowerMotors = -powerBack;
-                rightPowerMotors = powerBack * (axisX / 10);
+                rightPowerMotors = powerBack * axisX;
             }
             else if(axisX < -.1){
-                leftPowerMotors = -powerBack * (axisX / 10);
+                leftPowerMotors = -powerBack * axisX;
                 rightPowerMotors = powerBack;
             }
         }
