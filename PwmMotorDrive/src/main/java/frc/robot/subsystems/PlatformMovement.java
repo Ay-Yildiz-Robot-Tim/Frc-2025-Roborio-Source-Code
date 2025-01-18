@@ -100,13 +100,22 @@ public class PlatformMovement {
         return turnPower;
     }
 
-    // Mesafe için gereken motor gücü hesapla
     private double calculateDistancePower(double distance) {
-        // Dinamik mesafe: Mesafe parametre olarak değişebilir
-        // Burada mesafeyi 1.2 metre (120 cm) baz alarak normalize ediyoruz
-        double distancePower = distance / 100.0;  // Mesafe parametre olarak dinamik olacak
+        // 50 cm'den daha yakın olduğunda duracak şekilde güç hesaplama
+        double stopDistance = 20.0;  // Durma mesafesi (50 cm)
+        
+        // Mesafe 50 cm'den daha küçükse, robot durur
+        if (distance <= stopDistance) {
+            return 0;  // Robot durur
+        }
+        
+        // Mesafe arttıkça güç azalır (mesafe büyüdükçe hız azalır)
+        // Burada mesafe ile ters orantılı hız hesaplanır
+        double distancePower = 1 / (1 + distance / 100.0);  // Mesafe 100 cm'yi baz alarak normalleşir
+        
         return distancePower;
     }
+    
     
     // Robotun dönüş ve mesafe için gereken motor gücünü hesapla
     public double[] PowerCalc(double targetAngle, double distance) {

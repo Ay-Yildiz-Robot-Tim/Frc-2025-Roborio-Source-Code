@@ -34,6 +34,25 @@ static int isRunning;
  * this project, you must also update the Main.java file in the project.
  */
 public class Robot extends TimedRobot {
+  public enum ELVATORHIGHT {
+    X(10),
+    Y(20),
+    B(30),
+    A(40);
+
+    private int value;
+
+    // Enum constructor
+    ELVATORHIGHT(int value) {
+        this.value = value;
+    }
+
+    // Değeri döndüren metod
+    public int getValue() {
+        return value;
+    }  
+  }
+
   private Command m_autonomousCommand;
 
   private final RobotContainer m_robotContainer;
@@ -157,7 +176,7 @@ public class Robot extends TimedRobot {
     double distance = table.getEntry("Tag_1_Distance").getDouble(0);
     
     double motorSpeed[] = platformMovent.PowerCalc(angle, distance);
-    
+
     double rightMotorSpeed = motorSpeed[0];
     double leftMotorSpeed = motorSpeed[1];
 
