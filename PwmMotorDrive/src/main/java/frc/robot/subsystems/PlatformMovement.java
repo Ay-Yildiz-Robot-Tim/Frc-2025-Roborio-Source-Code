@@ -9,6 +9,9 @@ public class PlatformMovement {
         double rightPowerMotors = 0;
 
         if(powerFront > .1){
+            leftPowerMotors = powerFront;
+            rightPowerMotors = -powerFront;
+
             if(axisX > .1){
                 leftPowerMotors = powerFront * .5;
                 rightPowerMotors = -powerFront;
@@ -17,22 +20,17 @@ public class PlatformMovement {
                 leftPowerMotors = powerFront;
                 rightPowerMotors = -powerFront * .5;
             }
-            else{
-                leftPowerMotors = powerFront;
-                rightPowerMotors = -powerFront;
-            }
         }
         else if(powerBack > .1){
+            leftPowerMotors = -powerBack;
+            rightPowerMotors = powerBack;
+            
             if(axisX > .1){
                 leftPowerMotors = -powerBack;
                 rightPowerMotors = powerBack * .5;
             }
             else if(axisX < -.1){
                 leftPowerMotors = -powerBack * .5;
-                rightPowerMotors = powerBack;
-            }
-            else{
-                leftPowerMotors = -powerBack;
                 rightPowerMotors = powerBack;
             }
         }

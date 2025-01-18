@@ -7,6 +7,9 @@ package frc.robot;
 import java.io.Serial;
 
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.networkstables.NetworkTable;
+import edu.wpi.first.networkstables.NetworkTableEntry;
+import edu.wpi.first.networkstables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.motorcontrol.PWMVictorSPX;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -41,6 +44,8 @@ public class Robot extends TimedRobot {
   // joyistick tanımlamaları
   private Joystick joystick;
 
+  //rasberryin göndereceği datayı tanımlayın
+  edu.wpi.first.networktables.NetworkTable table;
   //movent hesaplama kütüphanesi tanımlaması
   private PlatformMovement platformMovent;
   /**
@@ -95,7 +100,13 @@ public class Robot extends TimedRobot {
 
   /** This function is called periodically during autonomous. */
   @Override
-  public void autonomousPeriodic() {}
+  public void autonomousPeriodic() {
+    table = NetworkTableInstance.getDefault().getTable("AprilTag");
+    double angle = table.getEntry("Tag_1_Angle").getDouble(0);
+    double distance = table.getEntry("Tag_1_Distance").getDouble(0);
+    
+    System.out.println(angle);
+  }
 
   @Override
   public void teleopInit() {
@@ -113,9 +124,10 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
   //joyisctic verilerini oku
-  double joystickBack = joystick.getRawAxis(3);
+  double joystickBack = joystick.getRawAxis(6);
   double joystickFront= joystick.getRawAxis(2);
   double joyistickX = joystick.getRawAxis(4);
+
   System.out.println(joystickBack);
   //kütüphane verileri okuma
   double motorSpeed[] = platformMovent.PowerCalc(joystickFront, joystickBack, joyistickX);
@@ -125,10 +137,12 @@ public class Robot extends TimedRobot {
   double leftMotorSpeed = motorSpeed[1];
   
   //motorlara pwm ayarlama
+  /*
   leftBackMotor.set(leftMotorSpeed);
   leftFrontMotor.set(leftMotorSpeed);
   rightBackMotor.set(rightMotorSpeed);
   rightFrontMotor.set(rightMotorSpeed);
+  */
   }
 
   @Override
