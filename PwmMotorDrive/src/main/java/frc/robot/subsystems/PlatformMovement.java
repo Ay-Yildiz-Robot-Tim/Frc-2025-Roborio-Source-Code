@@ -8,6 +8,7 @@ import edu.wpi.first.wpilibj.PS4Controller.Axis;
 
 public class PlatformMovement {
     
+    //ileri gidiş için
     private double[] FrontLineer(double powerFront, double axisX){
         //default atanması gereken değer
         double leftPowerMotors = powerFront;
@@ -26,6 +27,7 @@ public class PlatformMovement {
         return new double[]{rightPowerMotors, leftPowerMotors};
     }
 
+    //geri gidiş hesaplama
     private double[] BackLineer(double powerBack, double axisX){
         double leftPowerMotors = -powerBack;
         double rightPowerMotors = powerBack;
