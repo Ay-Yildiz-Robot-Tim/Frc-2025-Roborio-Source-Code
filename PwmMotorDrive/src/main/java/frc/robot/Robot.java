@@ -9,20 +9,18 @@ import java.io.Serial;
 import javax.lang.model.util.ElementScanner14;
 
 import edu.wpi.first.wpilibj.Joystick;
-<<<<<<< HEAD
 import edu.wpi.first.networkstables.NetworkTable;
 import edu.wpi.first.networkstables.NetworkTableEntry;
 import edu.wpi.first.networkstables.NetworkTableInstance;
-=======
 import edu.wpi.first.wpilibj.RobotBase;
->>>>>>> 51abf1ae4144e2054139aa84f9ca20c57b8bd44e
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.motorcontrol.PWMVictorSPX;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.PlatformMovement;
-
+import com.kauailabs.navx.frc.AHRS;
+import edu.wpi.first.wpilibj.SPI;
 
 class YC_Time {
 static int myTimeStamp;
@@ -59,7 +57,8 @@ public class Robot extends TimedRobot {
   private Joystick joystick;
 
   //rasberryin göndereceği datayı tanımlayın
-  edu.wpi.first.networktables.NetworkTable table;
+  private NetworkTable table;
+  
   //movent hesaplama kütüphanesi tanımlaması
   private PlatformMovement platformMovent;
   /**
@@ -151,16 +150,13 @@ public class Robot extends TimedRobot {
   /** This function is called periodically during autonomous. */
   @Override
   public void autonomousPeriodic() {
-<<<<<<< HEAD
     table = NetworkTableInstance.getDefault().getTable("AprilTag");
     double angle = table.getEntry("Tag_1_Angle").getDouble(0);
     double distance = table.getEntry("Tag_1_Distance").getDouble(0);
     
     System.out.println(angle);
-=======
   
 
->>>>>>> 51abf1ae4144e2054139aa84f9ca20c57b8bd44e
   }
 
   @Override
@@ -182,12 +178,11 @@ public class Robot extends TimedRobot {
   double joystickBack = joystick.getRawAxis(6);
   double joystickFront= joystick.getRawAxis(2);
   double joyistickX = joystick.getRawAxis(4);
-<<<<<<< HEAD
 
   System.out.println(joystickBack);
-=======
+
   //System.out.println(joystickBack);
->>>>>>> 51abf1ae4144e2054139aa84f9ca20c57b8bd44e
+  
   //kütüphane verileri okuma
   double motorSpeed[] = platformMovent.PowerCalc(joystickFront, joystickBack, joyistickX);
   
@@ -201,12 +196,8 @@ public class Robot extends TimedRobot {
   leftFrontMotor.set(leftMotorSpeed);
   rightBackMotor.set(rightMotorSpeed);
   rightFrontMotor.set(rightMotorSpeed);
-<<<<<<< HEAD
   */
-=======
-
   //System.out.println(Timer.getTimestamp());
->>>>>>> 51abf1ae4144e2054139aa84f9ca20c57b8bd44e
   }
 
   @Override

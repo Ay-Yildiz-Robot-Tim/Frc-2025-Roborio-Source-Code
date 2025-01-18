@@ -8,6 +8,10 @@ import edu.wpi.first.wpilibj.PS4Controller.Axis;
 
 public class PlatformMovement {
     
+    // Motorun maksimum RPM'si
+    private static final int MAX_RPM = 5310;  // Maksimum RPM
+    private static final int MIN_RPM = -5310; // Minimum RPM (geri yön)
+
     //ileri gidiş için
     private double[] FrontLineer(double powerFront, double axisX){
         //default atanması gereken değer
@@ -89,40 +93,50 @@ public class PlatformMovement {
         }
     }
 
-    public double[] PowerCalc(int targetAngle, int currentRPM, int targetRPM, int currentAngle) {
-        double[] motorPowers = {0.0, 0.0};
-    
-        // Kazanç Sabitleri (test ile ayarlanabilir)
-        double kP_angle = 0.02; // Açı için orantısal kazanç
-        double kI_angle = 0.001; // Açı için integral kazanç
-        double kP_rpm = 0.01;   // RPM için orantısal kazanç
-        double kI_rpm = 0.0005; // RPM için integral kazanç
-    
-        // Hata ve integral terimleri
-        double angleError = targetAngle - currentAngle;
-        double rpmError = targetRPM - currentRPM;
-    
-        // Integral terimlerini takip için static tanımlayın (hataların toplamını tutmak için)
-        double angleIntegral = 0.0;
-        double rpmIntegral = 0.0;
-    
-        // Hataların toplamı (integral terimi)
-        angleIntegral += angleError;
-        rpmIntegral += rpmError;
-    
-        // Düzeltme değerleri
-        double angleCorrection = kP_angle * angleError + kI_angle * angleIntegral;
-        double speedCorrection = kP_rpm * rpmError + kI_rpm * rpmIntegral;
-    
-        // Motor güçlerini hesapla
-        motorPowers[0] = speedCorrection + angleCorrection; // Sağ motor
-        motorPowers[1] = speedCorrection - angleCorrection; // Sol motor
-    
-        // Normalize sınırlandırma (-1.0 ile 1.0 arasında)
-        motorPowers[0] = Math.max(-1.0, Math.min(1.0, motorPowers[0]));
-        motorPowers[1] = Math.max(-1.0, Math.min(1.0, motorPowers[1]));
-    
-        return motorPowers;
+    // Dönüş için gereken motor gücü hesapla
+    private double calculateTurnPower(double targetAngle) {
+        // 20 dereceyi baz alıyoruz, diğer açılar için normalize ediyoruz
+        double turnPower = targetAngle / 20.0;  // 20 dereceyi baz alıyoruz
+        return turnPower;
+    }
+
+    // Mesafe için gereken motor gücü hesapla
+    private double calculateDistancePower(double distance) {
+        // Dinamik mesafe: Mesafe parametre olarak değişebilir
+        // Burada mesafeyi 1.2 metre (120 cm) baz alarak normalize ediyoruz
+        double distancePower = distance / 100.0;  // Mesafe parametre olarak dinamik olacak
+        return distancePower;
+    }
+    // Robotun dönüş ve mesafe için gereken motor gücünü hesapla
+    public double[] PowerCalc(double targetAngle, double distance) {
+        double leftPowerMotors = calculateDistancePower(distance);  // Başlangıçta sol motor gücü
+        double rightPowerMotors = calculateDistancePower(distance); // Başlangıçta sağ motor gücü
+
+        // Eğer açı -5 ile +5 arasında ise düz gitsin
+        if (targetAngle >= -5 && targetAngle <= 5) {
+            // Mesafe için güç sadece bir defa hesaplanır
+            leftPowerMotors = calculateDistancePower(distance);
+            rightPowerMotors = calculateDistancePower(distance);
+        } else {
+            // Dönüş için motor gücünü hesapla
+            double turnPower = calculateTurnPower(targetAngle);
+
+            // Dönüş yönüne göre motor güçlerini ayarla
+            if (targetAngle > 0) { // Sağ dönüş
+                rightPowerMotors = calculateDistancePower(distance) * (1 + turnPower); // Sağ motor hızı (1 = yüksek hız)
+                leftPowerMotors = calculateDistancePower(distance) * (1 - turnPower);  // Sol motor hızı (0 = düşük hız)
+            } else { // Sol dönüş
+                rightPowerMotors = calculateDistancePower(distance) * (1 - turnPower);  // Sağ motor hızı (0 = düşük hız)
+                leftPowerMotors = calculateDistancePower(distance) * (1 + turnPower);   // Sol motor hızı (1 = yüksek hız)
+            }
+        }
+
+        // Motor güçlerini 0 ile 1 arasında sınırla
+        rightPowerMotors = Math.max(0, Math.min(1, rightPowerMotors)); // Sağ motor için güç
+        leftPowerMotors = Math.max(0, Math.min(1, leftPowerMotors));   // Sol motor için güç
+
+        // Sağ ve sol motor güçlerini döndür
+        return new double[] {-rightPowerMotors, leftPowerMotors};
     }
         
 }
