@@ -107,6 +107,7 @@ public class PlatformMovement {
         double distancePower = distance / 100.0;  // Mesafe parametre olarak dinamik olacak
         return distancePower;
     }
+    
     // Robotun dönüş ve mesafe için gereken motor gücünü hesapla
     public double[] PowerCalc(double targetAngle, double distance) {
         double leftPowerMotors = calculateDistancePower(distance);  // Başlangıçta sol motor gücü

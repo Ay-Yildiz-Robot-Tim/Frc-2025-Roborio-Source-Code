@@ -123,6 +123,7 @@ public class Robot extends TimedRobot {
 
     //while(true)
     //{
+    /* 
       A_R_Axis = 0.2;
       A_L_Axis = 0;
       A_X_Axis = 0;
@@ -144,6 +145,7 @@ public class Robot extends TimedRobot {
       leftFrontMotor.set(A_LeftSpeed);
       rightBackMotor.set(A_RightSpeed);
       rightFrontMotor.set(A_RightSpeed);
+      */
     //}
   }
 
@@ -154,6 +156,16 @@ public class Robot extends TimedRobot {
     double angle = table.getEntry("Tag_1_Angle").getDouble(0);
     double distance = table.getEntry("Tag_1_Distance").getDouble(0);
     
+    double motorSpeed[] = platformMovent.PowerCalc(angle, distance);
+    
+    double rightMotorSpeed = motorSpeed[0];
+    double leftMotorSpeed = motorSpeed[1];
+
+    leftBackMotor.set(leftMotorSpeed);
+    leftFrontMotor.set(leftMotorSpeed);
+    rightBackMotor.set(rightMotorSpeed);
+    rightFrontMotor.set(rightMotorSpeed);
+
     System.out.println(angle);
   
 
