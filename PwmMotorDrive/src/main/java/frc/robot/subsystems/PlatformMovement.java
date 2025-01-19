@@ -20,12 +20,12 @@ public class PlatformMovement {
 
         //açısal dönüş koşulları
         if(axisX > .1){
-            leftPowerMotors = powerFront * axisX;
+            leftPowerMotors = powerFront * (1 - axisX);
             rightPowerMotors = -powerFront;
         }
         else if(axisX < -.1){
             leftPowerMotors = powerFront;
-            rightPowerMotors = -powerFront * axisX;
+            rightPowerMotors = -powerFront * (1 - axisX);
         }
 
         return new double[]{rightPowerMotors, leftPowerMotors};
@@ -39,10 +39,10 @@ public class PlatformMovement {
         //açısal dönüş koşulları ve hesaplanması
         if(axisX > .1){
             leftPowerMotors = -powerBack;
-            rightPowerMotors = powerBack * axisX;
+            rightPowerMotors = powerBack * (1 - axisX);
         }
         else if(axisX < -.1){
-            leftPowerMotors = -powerBack * axisX;
+            leftPowerMotors = -powerBack * (1 - axisX);
             rightPowerMotors = powerBack;
         }
 
