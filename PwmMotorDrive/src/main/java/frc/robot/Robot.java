@@ -9,9 +9,9 @@ import java.io.Serial;
 import javax.lang.model.util.ElementScanner14;
 
 import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.networkstables.NetworkTable;
-import edu.wpi.first.networkstables.NetworkTableEntry;
-import edu.wpi.first.networkstables.NetworkTableInstance;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
@@ -19,7 +19,7 @@ import edu.wpi.first.wpilibj.motorcontrol.PWMVictorSPX;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.PlatformMovement;
-import com.kauailabs.navx.frc.AHRS;
+//import com.kauailabs.navx.frc.AHRS;
 import edu.wpi.first.wpilibj.SPI;
 
 class YC_Time {
@@ -180,10 +180,10 @@ public class Robot extends TimedRobot {
     double rightMotorSpeed = motorSpeed[0];
     double leftMotorSpeed = motorSpeed[1];
 
-    leftBackMotor.set(leftMotorSpeed);
-    leftFrontMotor.set(leftMotorSpeed);
-    rightBackMotor.set(rightMotorSpeed);
-    rightFrontMotor.set(rightMotorSpeed);
+    //leftBackMotor.set(leftMotorSpeed);
+    //leftFrontMotor.set(leftMotorSpeed);
+    //rightBackMotor.set(rightMotorSpeed);
+    //rightFrontMotor.set(rightMotorSpeed);
 
     System.out.println(angle);
   
@@ -206,11 +206,9 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
   //joyisctic verilerini oku
-  double joystickBack = joystick.getRawAxis(6);
-  double joystickFront= joystick.getRawAxis(2);
+  double joystickBack = joystick.getRawAxis(2);
+  double joystickFront= joystick.getRawAxis(3);
   double joyistickX = joystick.getRawAxis(4);
-
-  System.out.println(joystickBack);
 
   //System.out.println(joystickBack);
   
@@ -222,12 +220,12 @@ public class Robot extends TimedRobot {
   double leftMotorSpeed = motorSpeed[1];
   
   //motorlara pwm ayarlama
-  /*
+  
   leftBackMotor.set(leftMotorSpeed);
   leftFrontMotor.set(leftMotorSpeed);
   rightBackMotor.set(rightMotorSpeed);
   rightFrontMotor.set(rightMotorSpeed);
-  */
+  
   //System.out.println(Timer.getTimestamp());
   }
 

@@ -55,6 +55,8 @@ dependencies {
     annotationProcessor wpi.java.deps.wpilibAnnotations()
     implementation wpi.java.deps.wpilib()
     implementation wpi.java.vendor.java()
+    implementation 'edu.wpi.first.ntcore:ntcore-java:2024.2.1'
+    implementation 'edu.wpi.first.wpilibj:wpilibj-java:2024.2.1'
 
     roborioDebug wpi.java.deps.wpilibJniDebug(wpi.platforms.roborio)
     roborioDebug wpi.java.vendor.jniDebug(wpi.platforms.roborio)
@@ -72,11 +74,6 @@ dependencies {
 
     testImplementation 'org.junit.jupiter:junit-jupiter:5.10.1'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-
-    implementation 'com.kauailabs.navx.frc:navx-java:3.1.413'
-    implementation 'edu.wpi.first.networktables:networktables-java:2023.2.0' // veya en son sürüm
-
-
 }
 
 test {

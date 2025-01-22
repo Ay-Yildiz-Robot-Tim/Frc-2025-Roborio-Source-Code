@@ -13,7 +13,7 @@ public class PlatformMovement {
     private static final int MIN_RPM = -5310; // Minimum RPM (geri yön)
 
     //ileri gidiş için
-    private double[] FrontLineer(double powerFront, double axisX){
+    private double[] BackLineer(double powerFront, double axisX){
         //default atanması gereken değer
         double leftPowerMotors = powerFront;
         double rightPowerMotors = -powerFront;
@@ -25,14 +25,14 @@ public class PlatformMovement {
         }
         else if(axisX < -.1){
             leftPowerMotors = powerFront;
-            rightPowerMotors = -powerFront * (1 - axisX);
+            rightPowerMotors = -powerFront * (1 + axisX);
         }
 
         return new double[]{rightPowerMotors, leftPowerMotors};
     }
 
     //geri gidiş hesaplama
-    private double[] BackLineer(double powerBack, double axisX){
+    private double[] FrontLineer(double powerBack, double axisX){
         double leftPowerMotors = -powerBack;
         double rightPowerMotors = powerBack;
 
@@ -42,7 +42,7 @@ public class PlatformMovement {
             rightPowerMotors = powerBack * (1 - axisX);
         }
         else if(axisX < -.1){
-            leftPowerMotors = -powerBack * (1 - axisX);
+            leftPowerMotors = -powerBack * (1 + axisX);
             rightPowerMotors = powerBack;
         }
 
