@@ -8,7 +8,11 @@ import java.io.Serial;
 
 import javax.lang.model.util.ElementScanner14;
 
+import org.w3c.dom.events.MouseEvent;
+
+import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
@@ -19,8 +23,10 @@ import edu.wpi.first.wpilibj.motorcontrol.PWMVictorSPX;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.PlatformMovement;
-//import com.kauailabs.navx.frc.AHRS;
-import edu.wpi.first.wpilibj.SPI;
+import frc.robot.subsystems.RobotArmController;
+import frc.robot.subsystems.ElevatorController;
+
+//import com.kauailabs.navx.frc.AHRS;roller();
 
 class YC_Time {
 static int myTimeStamp;
@@ -34,27 +40,9 @@ static int isRunning;
  * this project, you must also update the Main.java file in the project.
  */
 public class Robot extends TimedRobot {
-  public enum ELVATORHIGHT {
-    X(10),
-    Y(20),
-    B(30),
-    A(40);
-
-    private int value;
-
-    // Enum constructor
-    ELVATORHIGHT(int value) {
-        this.value = value;
-    }
-
-    // Değeri döndüren metod
-    public int getValue() {
-        return value;
-    }  
-  }
 
   private Command m_autonomousCommand;
-
+  
   private final RobotContainer m_robotContainer;
 
   /**
@@ -66,11 +54,6 @@ public class Robot extends TimedRobot {
     // autonomous chooser on the dashboard.
     m_robotContainer = new RobotContainer();
   }
-  //motor sürücü pwm tanımlamaları
-  private PWMVictorSPX leftFrontMotor;
-  private PWMVictorSPX leftBackMotor;
-  private PWMVictorSPX rightFrontMotor;
-  private PWMVictorSPX  rightBackMotor;
   
   // joyistick tanımlamaları
   private Joystick joystick;
@@ -80,6 +63,18 @@ public class Robot extends TimedRobot {
   
   //movent hesaplama kütüphanesi tanımlaması
   private PlatformMovement platformMovent;
+
+  //asansör motorunun tanımlanması
+  ElevatorController elevatorMotor = new ElevatorController();
+
+  //encoder tanımlamalaro
+  private Encoder elvatorEncoder;
+  private Encoder armEncoder;
+
+  
+  //setPoint
+  int setPoint = 0;
+
   /**
    * This function is called every 20 ms, no matter the mode. Use this for items like diagnostics
    * that you want ran during disabled, autonomous, teleoperated and test.
@@ -89,17 +84,19 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotInit() {
-    // Hareket motorlarına gidecek motor pinleri
-    leftFrontMotor = new PWMVictorSPX(Constants.PwmChannelContants.leftFrontMotosPwmChannel);  // PWM port left front motor
-    leftBackMotor = new PWMVictorSPX(Constants.PwmChannelContants.leftBackMotosPwmChannel);  // PWM port left back motor
-    rightFrontMotor = new PWMVictorSPX(Constants.PwmChannelContants.rightFrontMotosPwmChannel);  // PWM port right front motor
-    rightBackMotor = new PWMVictorSPX(Constants.PwmChannelContants.rightBackMotosPwmChannel);  // PWM port right back motor 
-
-    //joyistic tanımlaması
+    //joyistic tanımlamasız
     joystick = new Joystick(0);  // Joystick 0. portta
     
     //movent classını projeye dahil etme
     platformMovent = new PlatformMovement();
+
+    elvatorEncoder = new Encoder(0,1);
+    armEncoder = new Encoder(2,3);
+
+
+
+    // PID çıktısını -1 ile 1 arasında sınırlama
+
   }
 
 
@@ -205,30 +202,50 @@ public class Robot extends TimedRobot {
   /** This function is called periodically during operator control. */
   @Override
   public void teleopPeriodic() {
+
+
   //joyisctic verilerini oku
   double joystickBack = joystick.getRawAxis(2);
   double joystickFront= joystick.getRawAxis(3);
   double joyistickX = joystick.getRawAxis(4);
 
-  //System.out.println(joystickBack);
+  //Button Değerlerini Çekme
+  boolean joyistickButtonA = joystick.getRawButton(1);
+  boolean joyistickButtonB = joystick.getRawButton(2);
+  boolean joyistickButtonX = joystick.getRawButton(3);
+  boolean joyistickButtonY = joystick.getRawButton(4);
   
-  //kütüphane verileri okuma
-  double motorSpeed[] = platformMovent.PowerCalc(joystickFront, joystickBack, joyistickX);
-  
-  //kolay anlaşılması için değişkenlere atma
-  double rightMotorSpeed = motorSpeed[0];
-  double leftMotorSpeed = motorSpeed[1];
-  
-  //motorlara pwm ayarlama
-  
-  leftBackMotor.set(leftMotorSpeed);
-  leftFrontMotor.set(leftMotorSpeed);
-  rightBackMotor.set(rightMotorSpeed);
-  rightFrontMotor.set(rightMotorSpeed);
-  
-  //System.out.println(Timer.getTimestamp());
-  }
+  //encoder değerlerini çekme
+  int elevatorPulse = -elvatorEncoder.get();
+  int armPulse = armEncoder.get();
 
+  //istenen yükseklik değerine ulaşma
+  int point = joyistickButtonA ? 1000 : joyistickButtonB ? 2000 : joyistickButtonX ? 3000 : joyistickButtonY ? 4000 : 0;
+  
+  //setpoint değerini güncelleme
+  setSetPoint(point);
+
+
+
+  platformMovent.MoventManual(joystickFront, joystickBack, joyistickX);
+  elevatorMotor.SetMotorSpeed(setPoint, elevatorPulse);
+  
+  }
+  //kumdandan gelicek joyistick verisini kalıcı olarak atama
+  private void setSetPoint(int point){
+    if(point == 100){
+      setPoint = 100;
+    }
+    else if(point == 2000){
+      setPoint = 2000;
+    }
+    else if(point == 3000){
+      setPoint = 3000;
+    }
+    else if(point == 4000){
+      setPoint = 4000;
+    }
+  }
   @Override
   public void testInit() {
     // Cancels all running commands at the start of test mode.

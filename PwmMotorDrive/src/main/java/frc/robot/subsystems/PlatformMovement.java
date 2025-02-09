@@ -1,16 +1,44 @@
 package frc.robot.subsystems;
-
 import javax.security.sasl.AuthorizeCallback;
-
 import com.fasterxml.jackson.databind.cfg.EnumFeature;
-
 import edu.wpi.first.wpilibj.PS4Controller.Axis;
+import edu.wpi.first.wpilibj.motorcontrol.PWMVictorSPX;
+import frc.robot.Constants;
 
 public class PlatformMovement {
     
+    // Hareket motorlarına gidecek motor pinleri
+    PWMVictorSPX leftFrontMotor = new PWMVictorSPX(Constants.PwmChannelContants.leftFrontMotosPwmChannel);  // PWM port left front motor
+    PWMVictorSPX leftBackMotor = new PWMVictorSPX(Constants.PwmChannelContants.leftBackMotosPwmChannel);  // PWM port left back motor
+    PWMVictorSPX rightFrontMotor = new PWMVictorSPX(Constants.PwmChannelContants.rightFrontMotosPwmChannel);  // PWM port right front motor
+    PWMVictorSPX rightBackMotor = new PWMVictorSPX(Constants.PwmChannelContants.rightBackMotosPwmChannel);  // PWM port right back motor 
+
     // Motorun maksimum RPM'si
     private static final int MAX_RPM = 5310;  // Maksimum RPM
     private static final int MIN_RPM = -5310; // Minimum RPM (geri yön)
+
+    // Dönüş için gereken motor gücü hesapla
+    private double calculateTurnPower(double targetAngle) {
+        // 20 dereceyi baz alıyoruz, diğer açılar için normalize ediyoruz
+        double turnPower = targetAngle / 20.0;  // 20 dereceyi baz alıyoruz
+        return turnPower;
+    }
+
+    private double calculateDistancePower(double distance) {
+        // 50 cm'den daha yakın olduğunda duracak şekilde güç hesaplama
+        double stopDistance = 20.0;  // Durma mesafesi (50 cm)
+        
+        // Mesafe 50 cm'den daha küçükse, robot durur
+        if (distance <= stopDistance) {
+            return 0;  // Robot durur
+        }
+        
+        // Mesafe arttıkça güç azalır (mesafe büyüdükçe hız azalır)
+        // Burada mesafe ile ters orantılı hız hesaplanır
+        double distancePower = 1 / (1 + distance / 100.0);  // Mesafe 100 cm'yi baz alarak normalleşir
+        
+        return distancePower;
+    }
 
     //ileri gidiş için
     private double[] BackLineer(double powerFront, double axisX){
@@ -76,7 +104,7 @@ public class PlatformMovement {
         return new double[] {rightPowerMotors, leftPowerMotors};
     }
 
-    public double[] PowerCalc(double powerFront, double powerBack, double axisX) {//index 0 right motors index 1 left motors
+    private double[] PowerCalc(double powerFront, double powerBack, double axisX) {//index 0 right motors index 1 left motors
         //ileri buttonunda hareket varmı
         if(powerFront > .1){
             return FrontLineer(powerFront, axisX);
@@ -92,33 +120,8 @@ public class PlatformMovement {
             return TankTurn(axisX);
         }
     }
-
-    // Dönüş için gereken motor gücü hesapla
-    private double calculateTurnPower(double targetAngle) {
-        // 20 dereceyi baz alıyoruz, diğer açılar için normalize ediyoruz
-        double turnPower = targetAngle / 20.0;  // 20 dereceyi baz alıyoruz
-        return turnPower;
-    }
-
-    private double calculateDistancePower(double distance) {
-        // 50 cm'den daha yakın olduğunda duracak şekilde güç hesaplama
-        double stopDistance = 20.0;  // Durma mesafesi (50 cm)
-        
-        // Mesafe 50 cm'den daha küçükse, robot durur
-        if (distance <= stopDistance) {
-            return 0;  // Robot durur
-        }
-        
-        // Mesafe arttıkça güç azalır (mesafe büyüdükçe hız azalır)
-        // Burada mesafe ile ters orantılı hız hesaplanır
-        double distancePower = 1 / (1 + distance / 100.0);  // Mesafe 100 cm'yi baz alarak normalleşir
-        
-        return distancePower;
-    }
-    
-    
     // Robotun dönüş ve mesafe için gereken motor gücünü hesapla
-    public double[] PowerCalc(double targetAngle, double distance) {
+    private double[] PowerCalc(double targetAngle, double distance) {
         double leftPowerMotors = calculateDistancePower(distance);  // Başlangıçta sol motor gücü
         double rightPowerMotors = calculateDistancePower(distance); // Başlangıçta sağ motor gücü
 
@@ -148,5 +151,19 @@ public class PlatformMovement {
         // Sağ ve sol motor güçlerini döndür
         return new double[] {-rightPowerMotors, leftPowerMotors};
     }
-        
+    public void MoventManual(double powerFront, double powerBack, double axisX){
+        //değerleri çekme
+        double motorSpeed[] = PowerCalc(powerBack, powerFront, axisX);
+        double rightMotorSpeed = motorSpeed[0];
+        double leftMotorSpeed = motorSpeed[1];
+
+        //yön motorlara pwm ayarlama
+        leftBackMotor.set(leftMotorSpeed);
+        leftFrontMotor.set(leftMotorSpeed);
+        rightBackMotor.set(rightMotorSpeed);
+        rightFrontMotor.set(rightMotorSpeed);
+    }
+    public void MoventAuto(double targetAngle, double distance){
+        PowerCalc(targetAngle, distance);
+    }
 }

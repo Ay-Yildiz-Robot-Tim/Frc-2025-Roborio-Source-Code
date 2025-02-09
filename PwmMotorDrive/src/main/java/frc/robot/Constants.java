@@ -21,5 +21,8 @@ public final class Constants {
     public static final int leftBackMotosPwmChannel = 1;
     public static final int rightFrontMotosPwmChannel = 2;
     public static final int rightBackMotosPwmChannel = 3;
-  }
+    
+    public static final int elvatorMotorsChannel = 4;
+    
+   }
 }
