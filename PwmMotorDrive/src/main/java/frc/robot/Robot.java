@@ -8,6 +8,7 @@ import java.io.Serial;
 
 import javax.lang.model.util.ElementScanner14;
 
+import org.opencv.core.Point;
 import org.w3c.dom.events.MouseEvent;
 
 import edu.wpi.first.wpilibj.Encoder;
@@ -20,6 +21,7 @@ import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.motorcontrol.PWMVictorSPX;
+import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.PlatformMovement;
@@ -65,7 +67,10 @@ public class Robot extends TimedRobot {
   private PlatformMovement platformMovent;
 
   //asansör motorunun tanımlanması
-  ElevatorController elevatorMotor = new ElevatorController();
+  ElevatorController elevatorMotor;
+
+  //Kol Sınıfının Tanımlanması
+  RobotArmController robotArm;
 
   //encoder tanımlamalaro
   private Encoder elvatorEncoder;
@@ -74,7 +79,7 @@ public class Robot extends TimedRobot {
   
   //setPoint
   int setPoint = 0;
-
+  int armSetPoint = 0;
   /**
    * This function is called every 20 ms, no matter the mode. Use this for items like diagnostics
    * that you want ran during disabled, autonomous, teleoperated and test.
@@ -93,7 +98,9 @@ public class Robot extends TimedRobot {
     elvatorEncoder = new Encoder(0,1);
     armEncoder = new Encoder(2,3);
 
-
+    elevatorMotor = new ElevatorController();
+    
+    robotArm = new RobotArmController();
 
     // PID çıktısını -1 ile 1 arasında sınırlama
 
@@ -171,11 +178,6 @@ public class Robot extends TimedRobot {
     table = NetworkTableInstance.getDefault().getTable("AprilTag");
     double angle = table.getEntry("Tag_1_Angle").getDouble(0);
     double distance = table.getEntry("Tag_1_Distance").getDouble(0);
-    
-    double motorSpeed[] = platformMovent.PowerCalc(angle, distance);
-
-    double rightMotorSpeed = motorSpeed[0];
-    double leftMotorSpeed = motorSpeed[1];
 
     //leftBackMotor.set(leftMotorSpeed);
     //leftFrontMotor.set(leftMotorSpeed);
@@ -209,32 +211,42 @@ public class Robot extends TimedRobot {
   double joystickFront= joystick.getRawAxis(3);
   double joyistickX = joystick.getRawAxis(4);
 
-  //Button Değerlerini Çekme
-  boolean joyistickButtonA = joystick.getRawButton(1);
-  boolean joyistickButtonB = joystick.getRawButton(2);
-  boolean joyistickButtonX = joystick.getRawButton(3);
-  boolean joyistickButtonY = joystick.getRawButton(4);
-  
+  //kol Verilerini Çekme
+  int joyistickArm = joystick.getPOV();
+
+  //Button Değerlerini Çekme Joystick
+  boolean joystickButtonA = joystick.getRawButton(1);
+  boolean joystickButtonB = joystick.getRawButton(2);
+  boolean joystickButtonX = joystick.getRawButton(3);
+  boolean joystickButtonY = joystick.getRawButton(4);
+
   //encoder değerlerini çekme
   int elevatorPulse = -elvatorEncoder.get();
-  int armPulse = armEncoder.get();
+  int armPulse = -armEncoder.get();
 
   //istenen yükseklik değerine ulaşma
-  int point = joyistickButtonA ? 1000 : joyistickButtonB ? 2000 : joyistickButtonX ? 3000 : joyistickButtonY ? 4000 : 0;
+  int point = joystickButtonA ? 100 : joystickButtonB ? 1000 : joystickButtonX ? 2000 : joystickButtonY ? 3000: 0;
   
   //setpoint değerini güncelleme
   setSetPoint(point);
+  setSetPointArm(joyistickArm);
 
 
+  saveEncoderData(elevatorPulse, armPulse);
+  //System.out.println(elevatorPulse);
 
+  robotArm.SetMotorSpeed(armSetPoint, armPulse);
   platformMovent.MoventManual(joystickFront, joystickBack, joyistickX);
   elevatorMotor.SetMotorSpeed(setPoint, elevatorPulse);
-  
+
   }
   //kumdandan gelicek joyistick verisini kalıcı olarak atama
   private void setSetPoint(int point){
     if(point == 100){
       setPoint = 100;
+    }
+    else if(point == 1000){
+      setPoint = 1000;
     }
     else if(point == 2000){
       setPoint = 2000;
@@ -242,10 +254,22 @@ public class Robot extends TimedRobot {
     else if(point == 3000){
       setPoint = 3000;
     }
-    else if(point == 4000){
-      setPoint = 4000;
+  }
+  private void setSetPointArm(int point){
+    if(point == 0){
+      armSetPoint = 500;
+    }
+    else if(point == 180){
+      armSetPoint = 0;
     }
   }
+    public void saveEncoderData(int elevatorPulse, int armPulse) {
+    Preferences.setInt("elvatorEncoder", elevatorPulse);
+    Preferences.setInt("armEncoder", armPulse);
+    System.out.println(Preferences.getInt("armEncoder", 0));
+  }
+
+  
   @Override
   public void testInit() {
     // Cancels all running commands at the start of test mode.

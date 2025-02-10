@@ -23,6 +23,6 @@ public final class Constants {
     public static final int rightBackMotosPwmChannel = 3;
     
     public static final int elvatorMotorsChannel = 4;
-    
+    public static final int armMotorChannel = 5;
    }
 }
