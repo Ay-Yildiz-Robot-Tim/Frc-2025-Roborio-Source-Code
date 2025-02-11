@@ -24,5 +24,7 @@ public final class Constants {
     
     public static final int elvatorMotorsChannel = 4;
     public static final int armMotorChannel = 5;
+
+    public static final int pressureChannel = 0;
    }
 }

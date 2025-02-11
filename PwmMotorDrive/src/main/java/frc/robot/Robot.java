@@ -26,8 +26,10 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.PlatformMovement;
 import frc.robot.subsystems.RobotArmController;
+import frc.robot.Constants.PwmChannelContants;
 import frc.robot.subsystems.ElevatorController;
-
+import edu.wpi.first.wpilibj.AnalogInput;
+import frc.robot.subsystems.PneumaticSystem;
 //import com.kauailabs.navx.frc.AHRS;roller();
 
 class YC_Time {
@@ -57,6 +59,9 @@ public class Robot extends TimedRobot {
     m_robotContainer = new RobotContainer();
   }
   
+  //basınç sensörü kullanımı
+  private AnalogInput pressureSensor;
+
   // joyistick tanımlamaları
   private Joystick joystick;
 
@@ -76,7 +81,8 @@ public class Robot extends TimedRobot {
   private Encoder elvatorEncoder;
   private Encoder armEncoder;
 
-  
+  // piömatik class tanımlanması
+  PneumaticSystem pneumatic;
   //setPoint
   int setPoint = 0;
   int armSetPoint = 0;
@@ -104,9 +110,14 @@ public class Robot extends TimedRobot {
     
     robotArm = new RobotArmController();
 
+    pressureSensor = new AnalogInput(PwmChannelContants.pressureChannel);
+
+    pneumatic = new PneumaticSystem();
+    
+    pneumatic.SystemInıt();
     lastPointElevator =  Preferences.getInt("elvatorEncoder", 0);
     lastPointArm =  Preferences.getInt("armEncoder", 0);
-
+    
     // PID çıktısını -1 ile 1 arasında sınırlama
 
   }
@@ -213,14 +224,18 @@ public class Robot extends TimedRobot {
   public void teleopPeriodic() {
 
 
-  //joyisctic verilerini oku
+  //joyisctick verilerini oku
   double joystickBack = joystick.getRawAxis(2);
   double joystickFront= joystick.getRawAxis(3);
   double joyistickX = joystick.getRawAxis(4);
 
   //kol Verilerini Çekme
-  int joyistickArm = joystick.getPOV();
-
+  int joyistckArm = joystick.getPOV();
+  
+  //valfi kontrol edecek verileri çekme
+  boolean joyisctickValfOn = joystick.getRawButton(6);
+  boolean joyisctickValfOff = joystick.getRawButton(5); 
+  
   //Button Değerlerini Çekme Joystick
   boolean joystickButtonA = joystick.getRawButton(1);
   boolean joystickButtonB = joystick.getRawButton(2);
@@ -234,11 +249,15 @@ public class Robot extends TimedRobot {
   //istenen yükseklik değerine ulaşma
   int point = joystickButtonA ? 100 : joystickButtonB ? 1000 : joystickButtonX ? 2000 : joystickButtonY ? 3000: 0;
   
+  //basınç değerlerini alma ve dönüştürme
+  double pressureVoltage = pressureSensor.getVoltage();
+
   //setpoint değerini güncelleme
   setSetPoint(point);
-  setSetPointArm(joyistickArm);
+  setSetPointArm(joyistckArm);
 
   saveEncoderData(elevatorPulse, armPulse);
+  pneumatic.SystemFrover(joyisctickValfOn, joyisctickValfOff);
   robotArm.SetMotorSpeed(armSetPoint, armPulse);
   platformMovent.MoventManual(joystickFront, joystickBack, joyistickX);
   elevatorMotor.SetMotorSpeed(setPoint, elevatorPulse);
