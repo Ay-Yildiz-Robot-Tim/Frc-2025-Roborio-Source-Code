@@ -80,6 +80,8 @@ public class Robot extends TimedRobot {
   //setPoint
   int setPoint = 0;
   int armSetPoint = 0;
+  int lastPointArm = 0;
+  int lastPointElevator = 0;
   /**
    * This function is called every 20 ms, no matter the mode. Use this for items like diagnostics
    * that you want ran during disabled, autonomous, teleoperated and test.
@@ -101,6 +103,9 @@ public class Robot extends TimedRobot {
     elevatorMotor = new ElevatorController();
     
     robotArm = new RobotArmController();
+
+    lastPointElevator =  Preferences.getInt("elvatorEncoder", 0);
+    lastPointArm =  Preferences.getInt("armEncoder", 0);
 
     // PID çıktısını -1 ile 1 arasında sınırlama
 
@@ -194,7 +199,9 @@ public class Robot extends TimedRobot {
     // This makes sure that the autonomous stops running when
     // teleop starts running. If you want the autonomous to
     // continue until interrupted by another command, remove
+    
     // this line or comment it out.
+
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
@@ -221,8 +228,8 @@ public class Robot extends TimedRobot {
   boolean joystickButtonY = joystick.getRawButton(4);
 
   //encoder değerlerini çekme
-  int elevatorPulse = -elvatorEncoder.get();
-  int armPulse = -armEncoder.get();
+  int elevatorPulse = -elvatorEncoder.get() + lastPointElevator;
+  int armPulse = -armEncoder.get() + lastPointArm;
 
   //istenen yükseklik değerine ulaşma
   int point = joystickButtonA ? 100 : joystickButtonB ? 1000 : joystickButtonX ? 2000 : joystickButtonY ? 3000: 0;
@@ -231,10 +238,7 @@ public class Robot extends TimedRobot {
   setSetPoint(point);
   setSetPointArm(joyistickArm);
 
-
   saveEncoderData(elevatorPulse, armPulse);
-  //System.out.println(elevatorPulse);
-
   robotArm.SetMotorSpeed(armSetPoint, armPulse);
   platformMovent.MoventManual(joystickFront, joystickBack, joyistickX);
   elevatorMotor.SetMotorSpeed(setPoint, elevatorPulse);
@@ -263,12 +267,10 @@ public class Robot extends TimedRobot {
       armSetPoint = 0;
     }
   }
-    public void saveEncoderData(int elevatorPulse, int armPulse) {
+  public void saveEncoderData(int elevatorPulse, int armPulse) {
     Preferences.setInt("elvatorEncoder", elevatorPulse);
     Preferences.setInt("armEncoder", armPulse);
-    System.out.println(Preferences.getInt("armEncoder", 0));
   }
-
   
   @Override
   public void testInit() {
