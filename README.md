@@ -1,44 +1,86 @@
-Robot Project
-Bu proje, FIRST Robotics Competition (FRC) için geliştirilmiş bir robotun temel kontrol sistemini içermektedir. Robotun hareketini, joystick üzerinden verilen girişler ile kontrol etmek için kullanılan basit bir kod yapısını sunar. WPILib kütüphanesi kullanılarak, robotun motorları kontrol edilmekte ve joystick verileri alınarak motor hızları hesaplanmaktadır.
+# Robot Projesi
 
-Proje Yapısı
-Robot.java
-Bu dosya, robotun tüm fonksiyonel işlevlerini ve davranışlarını yöneten ana sınıftır. Bu sınıf, robotun başlatılmasından, hareket etmesine kadar tüm süreçleri yönetir.
+Bu proje, FRC robotumuzun çeşitli alt sistemlerini (elevator, platform hareketi, pnömatik sistem ve robot kolu) yönetmek için geliştirilmiştir. Robotumuzun hareket kontrolü, PID denetleyicileri ve joystick girişleri kullanılarak gerçekleştirilmiştir.
 
-Önemli Fonksiyonlar:
-robotInit(): Robot başlatıldığında yapılan ilk işlemleri içerir. Motorlar ve joystick burada başlatılır.
-teleopInit(): Teleoperated (uzaktan kontrol) moduna geçildiğinde yapılan işlemleri içerir. Joystick verileri alınır ve motor hızları hesaplanır.
-teleopPeriodic(): Teleoperated modunda sürekli olarak çalıştırılan fonksiyondur. Burada joystick verilerine göre motorlar çalıştırılır.
-Motor Kontrolü:
-PWMVictorSPX motor denetleyicileri kullanılarak robotun her iki tarafındaki motorlar (leftFrontMotor, leftBackMotor, rightFrontMotor, rightBackMotor) kontrol edilir.
-Joystick'in X ve Y eksenlerindeki değerler alınarak, robotun yönü ve hızı belirlenir.
-Constants.java
-Bu dosya, robotun tüm sabitlerini barındırır. Motorların PWM kanal numaraları ve joystick'in port numarası burada tanımlanır.
+## Alt Sistemler
 
-Sabitler:
-OperatorConstants: Operatör (sürücü) joystick'inin bağlandığı portu tanımlar.
-PwmChannelContants: Motorların bağlandığı PWM portlarını tanımlar.
-Kullanım
-Gerekli Kütüphaneler
-WPILib: FRC robotları için geliştirilen kütüphaneleri içerir.
-Motor kontrolü için PWMVictorSPX sınıfı kullanılır.
-Joystick sınıfı ile joystick verileri alınır.
-CommandScheduler sınıfı ile robotun komutları yönetilir.
-Bağlantılar
-Joystick: Robotun hareketini kontrol etmek için bir joystick kullanılır. Bu joystick, robotun hareketine yön vermek için X ve Y eksenleri kullanılarak hareket kontrol edilir.
-Motorlar: Motorlar, joystick verilerine göre hızlandırılır veya yavaşlatılır.
-Motor Pin Bağlantıları
-leftFrontMotor: PWM portu 0
-leftBackMotor: PWM portu 1
-rightFrontMotor: PWM portu 2
-rightBackMotor: PWM portu 3
-Joystick Bağlantısı
-Joystick, 0. port'a bağlanmıştır. Bu, robotun hareketini yönlendirmek için kullanılan ana giriş cihazıdır.
+### 1. Elevator Controller
+Elevator sistemi, robotun belirli bir yüksekliğe çıkmasını ve sabit kalmasını sağlamak için bir **PID kontrolcüsü** kullanır. PID kontrolü, motorun hedeflenen noktaya ulaşmasını ve dalgalanma olmadan stabil kalmasını sağlar.
 
-Nasıl Çalışır?
-Başlatma: robotInit() fonksiyonu robot başlatıldığında çalıştırılır, burada motorlar ve joystick başlatılır.
-Teleoperated Mod: teleopInit() fonksiyonu ile joystick'ten gelen veriler alınır, ardından motor hızları hesaplanarak robotun hareketi sağlanır.
-Motor Hızları: Joystick'in Y eksenindeki hareket robotun ileri-geri hareketini, X eksenindeki hareket ise dönüş hareketini kontrol eder. İleri hareket için Y değeri doğrudan motor hızlarına aktarılır. Dönüş içinse Y ve X değerlerinin kombinasyonu kullanılarak dönüş hızları hesaplanır.
-Lisans
-Bu yazılım, WPILib BSD lisansı altında dağıtılmaktadır. Daha fazla bilgi için, proje kök dizininde bulunan LICENSE dosyasını inceleyebilirsiniz.
+#### Kullanılan Bileşenler:
+- **PWMVictorSPX** motor sürücüsü
+- **PIDController** (Kp = 0.1, Ki = 0, Kd = 0)
+- Encoder ile yükseklik geri bildirimi
+
+#### Çalışma Prensibi:
+- `SetMotorSpeed(int targetPoint, int point)`: PID hesaplamalarını yaparak motor hızını belirler.
+- `GetPidCalculate(int targetPoint, int point)`: Belirlenen hedef yüksekliğe ulaşmak için PID hesaplamasını yapar.
+
+### 2. Platform Movement
+Platform, robotun hareket etmesini sağlayan ana sistemdir. Dört adet **PWMVictorSPX** motoru kullanılarak yönlendirilir. Hareket için joystick girişleri kullanılır.
+
+#### Özellikler:
+- **Tank dönüşü** ve **doğrusal hareket** hesaplamaları
+- **Hedef açı ve mesafeye** göre hız hesaplaması
+- Joystick üzerinden manuel kontrol
+
+#### Çalışma Prensibi:
+- `PowerCalc(double powerFront, double powerBack, double axisX)`: İleri, geri ve dönüş hareketlerini hesaplar.
+- `MoventManual(double powerFront, double powerBack, double axisX)`: Joystick ile manuel kontrol sağlar.
+- `MoventAuto(double targetAngle, double distance)`: Otonom hareket için motor hızlarını ayarlar.
+
+### 3. Pnömatik Sistem (Pneumatic System)
+Robotun pnömatik sistemini yönetir. Basınçlı hava kullanarak valfleri açıp kapamaya yarar.
+
+#### Kullanılan Bileşenler:
+- **Compressor** (REV PH)
+- **Solenoid valf**
+
+#### Çalışma Prensibi:
+- `SystemInıt()`: Pnömatik sistem başlatılır ve varsayılan kapalı moda alınır.
+- `SystemFrover(boolean valfOn, boolean valfOff)`: Valf kontrolü yapılarak pnömatik sistem çalıştırılır.
+
+### 4. Robot Arm Controller
+Robot kolu, PID kontrolcüsü kullanılarak belirli açılara getirilir. Encoder verileri kullanılarak hassas konumlandırma yapılır.
+
+#### Kullanılan Bileşenler:
+- **PWMVictorSPX** motor sürücüsü
+- **PIDController** (Kp = 0.07, Ki = 0, Kd = 0.001)
+- Encoder ile açı geri bildirimi
+
+#### Çalışma Prensibi:
+- `SetMotorSpeed(int targetPoint, int point)`: PID hesaplamaları ile kol motorunun hızını belirler.
+- `GetPidCalculate(int targetPoint, int point)`: Belirlenen hedef açıya ulaşmak için PID hesaplamasını yapar.
+
+## Robot.java
+Robotun ana kontrol dosyasıdır. Joystick girişlerini alarak ilgili alt sistemlere komutlar gönderir.
+
+#### İşlevler:
+- **Joystick verilerini okuma**: İleri, geri, dönüş, kol ve valf kontrolleri.
+- **PID kontrolcülerini besleme**: Elevator ve kol sistemleri için hedef noktaları ayarlar.
+- **Encoder verilerini kaydetme**: Robotun mevcut konum bilgilerini saklar.
+
+#### Önemli Metodlar:
+- `teleopPeriodic()`: Teleoperasyon modunda joystick girişlerini okuyarak motor ve sistemleri kontrol eder.
+- `setSetPoint(int point)`: Elevator için hedef yüksekliği belirler.
+- `setSetPointArm(int point)`: Robot kolu için hedef açıyı belirler.
+- `saveEncoderData(int elevatorPulse, int armPulse)`: Encoder verilerini saklar.
+
+## PID Kullanımı
+Bu projede PID kontrolü, **hem belirtilen yüksekliğe ulaşmak hem de konumu sabit tutmak için** kullanılır. PID algoritması, encoder verileriyle sürekli karşılaştırma yaparak motor hızını dinamik olarak ayarlar.
+
+### PID Faydaları:
+- **Stabil Hareket:** Ani hız değişimlerini engelleyerek sarsıntısız bir hareket sağlar.
+- **Hassas Konumlandırma:** Robot kolu ve elevator gibi sistemlerin doğru noktada kalmasını sağlar.
+- **Uyarlanabilirlik:** Farklı ağırlıklara ve dış etkilere göre otomatik olarak ayarlanabilir.
+
+## Kurulum ve Kullanım
+1. **Kodları yükleyin**: WPILib kullanarak FRC robotuna yükleyin.
+2. **Joystick bağlayın**: Robot kontrol sistemine bir joystick bağlayın.
+3. **Teleoperasyon moduna geçin**: `teleopPeriodic()` metodunun joystick verilerini okuyarak motorları kontrol ettiğini görebilirsiniz.
+4. **PID ayarlarını test edin**: Farklı Kp, Ki, Kd değerleriyle PID performansını test edin.
+
+---
+
+Bu proje FRC robot yarışmalarında otonom ve teleoperasyon modlarında stabil ve hassas hareket sağlamak için geliştirilmiştir.
 
