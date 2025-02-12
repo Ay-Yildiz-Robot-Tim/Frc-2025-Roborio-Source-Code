@@ -16,18 +16,25 @@ public class PneumaticSystem {
 
     public void SystemFrover(boolean valfOn, boolean valfOff){
         boolean valfStateBool = false;
+        double oldPressure = compressor.getPressure();
         if(valfOff){
             valfStateBool = false;
         }
         else if(valfOn){
             valfStateBool = true;
         }
+
         compressor.enableAnalog(60, 90);
-        ValfState(valfStateBool);
+        ValfState(valfStateBool, oldPressure);
     }
-    private void ValfState(boolean state){
+    
+    private void ValfState(boolean state, double oldPressure){
+        double newPressure = compressor.getPressure();
         if(state){
-            solenoid.set(true);
+            while(oldPressure - newPressure < 3){
+                solenoid.set(true);
+                newPressure = compressor.getPressure();
+            }
         }
         else{
             solenoid.set(false);
