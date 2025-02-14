@@ -5,6 +5,7 @@ import edu.wpi.first.wpilibj.Solenoid;
 
 public class PneumaticSystem {
     private final Compressor compressor = new Compressor(0, PneumaticsModuleType.REVPH);
+    boolean valfStateBool = false;
 
     // PCM'deki solenoid valf
     private final Solenoid solenoid = new Solenoid(PneumaticsModuleType.REVPH, 0);
@@ -15,7 +16,6 @@ public class PneumaticSystem {
     }
 
     public void SystemFrover(boolean valfOn, boolean valfOff){
-        boolean valfStateBool = false;
         double oldPressure = compressor.getPressure();
         if(valfOff){
             valfStateBool = false;
@@ -27,18 +27,15 @@ public class PneumaticSystem {
         compressor.enableAnalog(60, 90);
         ValfState(valfStateBool, oldPressure);
     }
-    
+
+
+
     private void ValfState(boolean state, double oldPressure){
-        double newPressure = compressor.getPressure();
         if(state){
-            while(oldPressure - newPressure < 3){
-                solenoid.set(true);
-                newPressure = compressor.getPressure();
-            }
+            solenoid.set(true);
         }
         else{
             solenoid.set(false);
         }
     }
-
 }
