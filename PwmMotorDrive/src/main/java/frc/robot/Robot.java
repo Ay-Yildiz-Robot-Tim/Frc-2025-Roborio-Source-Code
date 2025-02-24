@@ -114,7 +114,7 @@ public class Robot extends TimedRobot {
 
     pneumatic = new PneumaticSystem();
     
-    pneumatic.SystemInıt();
+    
     lastPointElevator =  Preferences.getInt("elvatorEncoder", 0);
     lastPointArm =  Preferences.getInt("armEncoder", 0);
     
