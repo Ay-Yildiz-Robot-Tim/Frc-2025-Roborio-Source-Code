@@ -1,9 +1,9 @@
 package frc.robot.subsystems;
 import edu.wpi.first.wpilibj.DigitalOutput;
+import edu.wpi.first.wpilibj.motorcontrol.PWMVictorSPX;
 
 public class PneumaticSystem {
-    DigitalOutput leftSuction = new DigitalOutput(4); // DIO 1'e bağlı LED
-    DigitalOutput rightSuction = new DigitalOutput(5); // DIO 1'e bağlı LED
+    private PWMVictorSPX valfMotor = new PWMVictorSPX(6);
 
     boolean valfStateBool = false;
     
@@ -22,13 +22,10 @@ public class PneumaticSystem {
 
     private void ValfState(boolean state){
         if(state){
-            leftSuction.set(true);
-            rightSuction.set(true);
-
+            valfMotor.set(1);
         }
         else{
-            leftSuction.set(false);
-            rightSuction.set(false);
+            valfMotor.set(0);
         }
     }
 }

@@ -1,6 +1,9 @@
 package frc.robot.subsystems;
 import edu.wpi.first.wpilibj.motorcontrol.PWMVictorSPX;
 import frc.robot.Constants;
+
+import org.opencv.core.Mat;
+
 import edu.wpi.first.math.controller.PIDController;
 
 public class RobotArmController {
@@ -14,6 +17,7 @@ public class RobotArmController {
     
     public void SetMotorSpeed(int targetPoint, int point){
         double speed = GetPidCalculate(targetPoint, point);
+        speed *= 0.25; // Hızı %50 düşürüyoruz  
         armMotor.set(speed);
     }
 }
