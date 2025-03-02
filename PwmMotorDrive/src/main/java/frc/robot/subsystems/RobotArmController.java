@@ -17,7 +17,7 @@ public class RobotArmController {
     
     public void SetMotorSpeed(int targetPoint, int point){
         double speed = GetPidCalculate(targetPoint, point);
-        speed *= 0.25; // Hızı %50 düşürüyoruz  
+        speed *= 0.15; // Hızı %50 düşürüyoruz  
         armMotor.set(speed);
     }
 }

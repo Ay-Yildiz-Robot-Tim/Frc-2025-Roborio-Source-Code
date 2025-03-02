@@ -66,7 +66,7 @@ public class Robot extends TimedRobot {
 
   // joyistick tanımlamaları
   private Joystick joystick;
-
+  private Joystick joystick1;
   //rasberryin göndereceği datayı tanımlayın
   private NetworkTable table;
   
@@ -84,10 +84,12 @@ public class Robot extends TimedRobot {
   private Encoder armEncoder;
 
   private Timer timer = new Timer();
-
+  private Timer timer2 = new Timer();
+  private Timer timer3 = new Timer();
+  
   // piömatik class tanımlanması
   PneumaticSystem pneumatic;
-  //setPoint
+  //setPoint@
   int setPoint = 2120;
   int armSetPoint = -498;
   int lastPointArm = -498;
@@ -95,6 +97,7 @@ public class Robot extends TimedRobot {
   int elevatorPulse;
   int armPulse;
   long count = 0;
+  char pointChar = ' ';
   /**
    * This function is called every 20 ms, no matter the mode. Use this for items like diagnostics
    * that you want ran during disabled, autonomous, teleoperated and test.
@@ -106,7 +109,7 @@ public class Robot extends TimedRobot {
   public void robotInit() {
     //joyistic tanımlamasız
     joystick = new Joystick(0);  // Joystick 0. portta
-    
+    joystick1 = new Joystick(1);
     //movent classını projeye dahil etme
     platformMovent = new PlatformMovement();
 
@@ -120,9 +123,6 @@ public class Robot extends TimedRobot {
     pressureSensor = new AnalogInput(PwmChannelContants.pressureChannel);
 
     pneumatic = new PneumaticSystem();
-
-
-    
     // PID çıktısını -1 ile 1 arasında sınırlama
 
   }
@@ -164,33 +164,8 @@ public class Robot extends TimedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.schedule();
     }
-
-    //while(true)
-    //{
-    /* 
-      A_R_Axis = 0.2;
-      A_L_Axis = 0;
-      A_X_Axis = 0;
-      A_MotorSpeed = platformMovent.PowerCalc(A_R_Axis, A_L_Axis, A_X_Axis);
-      A_LeftSpeed = A_MotorSpeed[1];
-      A_RightSpeed = A_MotorSpeed[0];
-      leftBackMotor.set(A_LeftSpeed);
-      leftFrontMotor.set(A_LeftSpeed);
-      rightBackMotor.set(A_RightSpeed);
-      rightFrontMotor.set(A_RightSpeed);
-      Timer.delay(15);
-      A_R_Axis = 0;
-      A_L_Axis = 0;
-      A_X_Axis = 0;
-      A_MotorSpeed = platformMovent.PowerCalc(A_R_Axis, A_L_Axis, A_X_Axis);
-      A_LeftSpeed = A_MotorSpeed[1];
-      A_RightSpeed = A_MotorSpeed[0];
-      leftBackMotor.set(A_LeftSpeed);
-      leftFrontMotor.set(A_LeftSpeed);
-      rightBackMotor.set(A_RightSpeed);
-      rightFrontMotor.set(A_RightSpeed);
-      */
-    //}
+    timer2.reset();
+    timer2.start();
   }
 
   /** This function is called periodically during autonomous. */
@@ -199,12 +174,21 @@ public class Robot extends TimedRobot {
   //encoder değerlerini çekme
   elevatorPulse = -elvatorEncoder.get() + lastPointElevator;
   armPulse = -armEncoder.get() + lastPointArm;
-    System.out.println(armPulse + " " + elevatorPulse);
-    //leftBackMotor.set(leftMotorSpeed);
-    //leftFrontMotor.set(leftMotorSpeed);
-    //rightBackMotor.set(rightMotorSpeed);
-    //rightFrontMotor.set(rightMotorSpeed);  
-    
+    if(timer2.get() <= 5){
+      platformMovent.MoventManual(0, 1, 0);
+    }
+    else{
+      platformMovent.MoventManual(0, 0, 0);
+      setSetPointArm(180);
+      elevatorMotor.SetMotorSpeed(setPoint, elevatorPulse);
+      System.out.println(timer.get());
+      if(timer3.get() >= 2.0){
+        robotArm.SetMotorSpeed(armSetPoint, armPulse);
+        timer.stop();
+        System.out.println(armPulse + " " + elevatorPulse);
+
+      }    
+    }
   }
 
   @Override
@@ -250,19 +234,17 @@ public class Robot extends TimedRobot {
   setSetPoint(point);
   setSetPointArm(joyistckArm);
 
-  //gücü dağıtma
-  saveEncoderData(0, 0);
-   
   pneumatic.SystemFrover(joyisctickValfOn, joyisctickValfOff);
   platformMovent.MoventManual(joystickBack, joystickFront, joyistickX);
   elevatorMotor.SetMotorSpeed(setPoint, elevatorPulse);
-
+  armLow(pointChar, joyisctickValfOff);
   if(timer.get() >= 2.0){
     robotArm.SetMotorSpeed(armSetPoint, armPulse);
     timer.stop();
   }
-  System.out.println(elevatorPulse +  " " + armPulse + " " + count);
-  }
+  System.out.println(pointChar + " " + armSetPoint);
+}
+
   //kumdandan gelicek joyistick verisini kalıcı olarak atama
   private void setSetPoint(int point){
     if(point == 100){      
@@ -272,33 +254,53 @@ public class Robot extends TimedRobot {
     else if(point == 1000){
       setPoint = 2450;
       armSetPoint = -1025;
+      pointChar = 'b';
     }
     else if(point == 2000){
       setPoint = 4240;
-      armSetPoint = -1050;
+      armSetPoint = -1035;
+      pointChar = 'c';
     }
     else if(point == 3000){
-      setPoint = 4195;
-      armSetPoint = -875;
+      setPoint = 4100;
+      armSetPoint = -850;
+      pointChar = 'y';
     }
   }
+  
   private void setSetPointArm(int point){
-    if(point == 0){
-      armSetPoint = 0;
-    }
-    else if(point == 180){
+    if(point == 180){
       armSetPoint = -1400;
       setPoint = 3300;
       timer.reset();
       timer.start(); // Timer başlatılıyor
+      timer3.start();
+    }
+
+    else if(point == 0){
+      setPoint = 200;
+    }
+
+    else if(point == 90){
+      armSetPoint = -885;
+      setPoint = 4000;
+    }
+
+    else if(point == 270){
+      armSetPoint = -835;
+      setPoint = 3807;
     }
   }
-  public void saveEncoderData(int elevatorPulse, int armPulse) {
-    Preferences.setInt("elvatorEncoder", elevatorPulse);
-    Preferences.setInt("armEncoder", armPulse);
+
+  private void armLow(char x, boolean joyisctickValfOff){
+    if(joyisctickValfOff){
+      if(x == 'b' || x == 'c'){
+        armSetPoint = -910;
+        pointChar = ' ';
+      }
+    }
   }
-  
-  @Override
+@Override
   public void testInit() {
     // Cancels all running commands at the start of test mode.
     CommandScheduler.getInstance().cancelAll();
