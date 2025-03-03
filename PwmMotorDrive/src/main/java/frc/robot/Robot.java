@@ -5,6 +5,7 @@
 package frc.robot;
 
 import java.io.Serial;
+import java.util.jar.Attributes.Name;
 
 import javax.lang.model.util.ElementScanner14;
 
@@ -186,17 +187,15 @@ public class Robot extends TimedRobot {
 
     pneumatic = new PneumaticSystem();
 
-    cam = new UsbCamera("USB Camera 1", 0);
+    UsbCamera cam = CameraServer.startAutomaticCapture(0);
     cam.setConnectionStrategy(VideoSource.ConnectionStrategy.kKeepOpen);
     cam.setVideoMode(PixelFormat.kMJPEG, 1280, 720, 30);
     cam.setResolution(1280, 720);
     cam.setFPS(30);
-    cam.setExposureManual(10);
-    cam.setWhiteBalanceManual(50);
     CameraServer.startAutomaticCapture(cam);
 
     MjpegServer frontCamServer = CameraServer.addServer("gripStream");
-    frontCamServer.setResolution(1280, 720);
+    frontCamServer.setResolution(1280,720);
     frontCamServer.setFPS(30);
     frontCamServer.setSource(cam);
   }
