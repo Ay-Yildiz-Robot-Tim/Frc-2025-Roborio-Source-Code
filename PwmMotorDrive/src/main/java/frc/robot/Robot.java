@@ -14,6 +14,7 @@ import org.w3c.dom.events.MouseEvent;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.cscore.UsbCamera;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
@@ -86,7 +87,11 @@ public class Robot extends TimedRobot {
   private Timer timer = new Timer();
   private Timer timer2 = new Timer();
   private Timer timer3 = new Timer();
-  
+  private Timer timer4 = new Timer();
+  private Timer timer5 = new Timer();
+  private Timer timer6 = new Timer();
+  private Timer timer7 = new Timer();
+  private Timer timer8 = new Timer();
   // piömatik class tanımlanması
   PneumaticSystem pneumatic;
   //setPoint@
@@ -98,6 +103,7 @@ public class Robot extends TimedRobot {
   int armPulse;
   long count = 0;
   char pointChar = ' ';
+  char pointOtonom = ' ';
   /**
    * This function is called every 20 ms, no matter the mode. Use this for items like diagnostics
    * that you want ran during disabled, autonomous, teleoperated and test.
@@ -123,8 +129,12 @@ public class Robot extends TimedRobot {
     pressureSensor = new AnalogInput(PwmChannelContants.pressureChannel);
 
     pneumatic = new PneumaticSystem();
-    // PID çıktısını -1 ile 1 arasında sınırlama
 
+    UsbCamera cam = CameraServer.startAutomaticCapture(1);
+    cam.setResolution(640, 480);
+    cam.setFPS(30);
+
+    
   }
 
 
@@ -174,21 +184,89 @@ public class Robot extends TimedRobot {
   //encoder değerlerini çekme
   elevatorPulse = -elvatorEncoder.get() + lastPointElevator;
   armPulse = -armEncoder.get() + lastPointArm;
-    if(timer2.get() <= 5){
-      platformMovent.MoventManual(0, 1, 0);
+  if(pointOtonom == ' '){
+    if(timer2.get() <= 2){
+      platformMovent.MoventManual(0, .8, -.2);
+      System.out.println("A");
     }
-    else{
-      platformMovent.MoventManual(0, 0, 0);
-      setSetPointArm(180);
-      elevatorMotor.SetMotorSpeed(setPoint, elevatorPulse);
-      System.out.println(timer.get());
-      if(timer3.get() >= 2.0){
-        robotArm.SetMotorSpeed(armSetPoint, armPulse);
-        timer.stop();
-        System.out.println(armPulse + " " + elevatorPulse);
+    if(timer2.get() >= 2){
+      pointOtonom = 'A';
+      timer2.stop();
 
-      }    
     }
+  }
+      if(pointOtonom == 'A'){
+        platformMovent.MoventManual(0, 0, 0);
+        setSetPointArm(180);
+        elevatorMotor.SetMotorSpeed(setPoint, elevatorPulse);
+        if(timer3.get() >= 2.0){
+          robotArm.SetMotorSpeed(armSetPoint, armPulse);
+          timer.stop();
+          System.out.println(armPulse + " " + elevatorPulse);
+          if(timer3.get() >= 4.0){
+            pointOtonom = 'B';
+            timer3.stop();
+            timer4.reset();
+            timer4.start();
+          }
+        }    
+      }
+      else if(pointOtonom == 'B'){
+        if(timer4.get() <= .5){
+        platformMovent.MoventManual(0, 0, .44);
+        }
+        if(timer4.get() >= .5){
+          pointOtonom = 'C';
+          timer4.stop();
+          timer5.reset();
+          timer5.start();
+        }
+      }
+      else if(pointOtonom == 'C'){
+        if(timer5.get() <= 3){
+          platformMovent.MoventManual(0, 0.5, 0);
+        }
+        if(timer5.get() >= 3){
+          platformMovent.MoventManual(0, 0, 0);
+          pointOtonom = 'D';
+          timer5.stop();
+          timer6.reset();
+          timer6.start();
+        }
+      }
+      else if(pointOtonom == 'D'){
+        if(timer6.get() <= 2){
+          setSetPoint(100);
+          elevatorMotor.SetMotorSpeed(setPoint, elevatorPulse);
+          robotArm.SetMotorSpeed(armSetPoint, armPulse);
+          pneumatic.SystemFrover(true, false);
+        }
+        else{
+          pointOtonom = 'E';
+          timer6.stop();
+          timer7.reset();
+          timer7.start();
+        }
+      }
+      else if(pointOtonom == 'E'){
+        if(timer.get() <= 3){
+          setSetPoint(1000);
+          robotArm.SetMotorSpeed(armSetPoint, armPulse);
+          elevatorMotor.SetMotorSpeed(setPoint, elevatorPulse);
+        }
+        else{
+          pointOtonom = 'F';
+          timer7.stop();
+          timer8.reset();
+          timer8.start();
+        }
+      }
+      else if(pointOtonom == 'F'){
+        pneumatic.SystemFrover(false, true);
+        armLow('b', true);
+      }
+      
+
   }
 
   @Override
