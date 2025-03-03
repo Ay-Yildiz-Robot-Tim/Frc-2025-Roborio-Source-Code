@@ -154,8 +154,8 @@ public class PlatformMovement {
     public void MoventManual(double powerFront, double powerBack, double axisX){
         //değerleri çekme
         double motorSpeed[] = PowerCalc(powerBack, powerFront, axisX);
-        double rightMotorSpeed = motorSpeed[0] * 0.5;
-        double leftMotorSpeed = motorSpeed[1] * 0.5;
+        double rightMotorSpeed = motorSpeed[0] * 0.8;
+        double leftMotorSpeed = motorSpeed[1] * 0.8;
 
         //yön motorlara pwm ayarlama
         leftBackMotor.set(leftMotorSpeed);

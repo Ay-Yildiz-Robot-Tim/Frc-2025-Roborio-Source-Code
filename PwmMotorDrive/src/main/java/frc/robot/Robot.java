@@ -14,15 +14,20 @@ import org.w3c.dom.events.MouseEvent;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.cscore.MjpegServer;
 import edu.wpi.first.cscore.UsbCamera;
+import edu.wpi.first.cscore.VideoMode;
+import edu.wpi.first.cscore.VideoSource;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.util.PixelFormat;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.motorcontrol.PWMVictorSPX;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -64,6 +69,8 @@ public class Robot extends TimedRobot {
   
   //basınç sensörü kullanımı
   private AnalogInput pressureSensor;
+
+  UsbCamera cam;
 
   // joyistick tanımlamaları
   private Joystick joystick;
@@ -130,11 +137,16 @@ public class Robot extends TimedRobot {
 
     pneumatic = new PneumaticSystem();
 
-    UsbCamera cam = CameraServer.startAutomaticCapture(1);
-    cam.setResolution(640, 480);
+    cam = new UsbCamera("USB Camera 1", 1);
+    CameraServer.startAutomaticCapture(cam);
+    cam.setConnectionStrategy(VideoSource.ConnectionStrategy.kKeepOpen);
+    cam.setVideoMode(PixelFormat.kMJPEG, 1280, 720, 30);
+    cam.setResolution(1280, 720);
     cam.setFPS(30);
-
-    
+    MjpegServer frontCamServer = CameraServer.addServer("gripStream");
+    frontCamServer.setResolution(1280, 720);
+    frontCamServer.setFPS(30);
+    frontCamServer.setSource(cam);
   }
 
 
@@ -186,7 +198,7 @@ public class Robot extends TimedRobot {
   armPulse = -armEncoder.get() + lastPointArm;
   if(pointOtonom == ' '){
     if(timer2.get() <= 2){
-      platformMovent.MoventManual(0, .8, -.2);
+      platformMovent.MoventManual(0, .5, -.2);
       System.out.println("A");
     }
     if(timer2.get() >= 2){
@@ -203,7 +215,7 @@ public class Robot extends TimedRobot {
           robotArm.SetMotorSpeed(armSetPoint, armPulse);
           timer.stop();
           System.out.println(armPulse + " " + elevatorPulse);
-          if(timer3.get() >= 4.0){
+          if(timer3.get() >= 3.7){
             pointOtonom = 'B';
             timer3.stop();
             timer4.reset();
@@ -212,10 +224,14 @@ public class Robot extends TimedRobot {
         }    
       }
       else if(pointOtonom == 'B'){
-        if(timer4.get() <= .5){
-        platformMovent.MoventManual(0, 0, .44);
+        if(timer4.get() <= 4){
+        setSetPoint(100);
+        elevatorMotor.SetMotorSpeed(setPoint, elevatorPulse);
+        robotArm.SetMotorSpeed(armSetPoint, armPulse);
+        pneumatic.SystemFrover(true, false);
+        platformMovent.MoventManual(0, 0, 0);
         }
-        if(timer4.get() >= .5){
+        if(timer4.get() >= 4){
           pointOtonom = 'C';
           timer4.stop();
           timer5.reset();
@@ -223,10 +239,11 @@ public class Robot extends TimedRobot {
         }
       }
       else if(pointOtonom == 'C'){
-        if(timer5.get() <= 3){
-          platformMovent.MoventManual(0, 0.5, 0);
+        if(timer5.get() <= .5){
+          platformMovent.MoventManual(0, 0, .37);
+
         }
-        if(timer5.get() >= 3){
+        if(timer5.get() >= .5){
           platformMovent.MoventManual(0, 0, 0);
           pointOtonom = 'D';
           timer5.stop();
@@ -235,13 +252,12 @@ public class Robot extends TimedRobot {
         }
       }
       else if(pointOtonom == 'D'){
-        if(timer6.get() <= 2){
-          setSetPoint(100);
-          elevatorMotor.SetMotorSpeed(setPoint, elevatorPulse);
-          robotArm.SetMotorSpeed(armSetPoint, armPulse);
-          pneumatic.SystemFrover(true, false);
+        if(timer6.get() <= 1.5){
+          platformMovent.MoventManual(0, 0.5, 0);
+
         }
         else{
+          platformMovent.MoventManual(0, 0, 0);
           pointOtonom = 'E';
           timer6.stop();
           timer7.reset();
@@ -249,7 +265,7 @@ public class Robot extends TimedRobot {
         }
       }
       else if(pointOtonom == 'E'){
-        if(timer.get() <= 3){
+        if(timer7.get() <= 3){
           setSetPoint(1000);
           robotArm.SetMotorSpeed(armSetPoint, armPulse);
           elevatorMotor.SetMotorSpeed(setPoint, elevatorPulse);
@@ -262,8 +278,11 @@ public class Robot extends TimedRobot {
         }
       }
       else if(pointOtonom == 'F'){
-        pneumatic.SystemFrover(false, true);
-        armLow('b', true);
+          armLow('b', true);
+          pneumatic.SystemFrover(false, true);
+          robotArm.SetMotorSpeed(armSetPoint, armPulse);
+          elevatorMotor.SetMotorSpeed(setPoint, elevatorPulse);
+          System.out.println(pointOtonom);
       }
       
 
@@ -281,7 +300,6 @@ public class Robot extends TimedRobot {
   /** This function is called periodically during operator control. */
   @Override
   public void teleopPeriodic() {
-
 
   //joyisctick verilerini oku
   double joystickBack = joystick.getRawAxis(2);
@@ -320,14 +338,14 @@ public class Robot extends TimedRobot {
     robotArm.SetMotorSpeed(armSetPoint, armPulse);
     timer.stop();
   }
-  System.out.println(pointChar + " " + armSetPoint);
+  //System.out.println(pointChar + " " + armSetPoint);
 }
 
   //kumdandan gelicek joyistick verisini kalıcı olarak atama
   private void setSetPoint(int point){
     if(point == 100){      
       armSetPoint = -1425;
-      setPoint = 2200; 
+      setPoint = 2250; 
     }
     else if(point == 1000){
       setPoint = 2450;
@@ -348,7 +366,7 @@ public class Robot extends TimedRobot {
   
   private void setSetPointArm(int point){
     if(point == 180){
-      armSetPoint = -1400;
+      armSetPoint = -1000;
       setPoint = 3300;
       timer.reset();
       timer.start(); // Timer başlatılıyor
@@ -361,7 +379,7 @@ public class Robot extends TimedRobot {
 
     else if(point == 90){
       armSetPoint = -885;
-      setPoint = 4000;
+      setPoint = 4150;
     }
 
     else if(point == 270){
