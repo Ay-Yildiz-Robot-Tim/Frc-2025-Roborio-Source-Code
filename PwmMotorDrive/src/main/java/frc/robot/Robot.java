@@ -8,12 +8,18 @@ import java.io.Serial;
 
 import javax.lang.model.util.ElementScanner14;
 
+import org.opencv.core.Mat;
 import org.opencv.core.Point;
+import org.opencv.core.Scalar;
+import org.opencv.imgproc.Imgproc;
 import org.w3c.dom.events.MouseEvent;
 
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.cscore.CvSink;
+import edu.wpi.first.cscore.CvSource;
+import edu.wpi.first.cscore.HttpCamera;
 import edu.wpi.first.cscore.MjpegServer;
 import edu.wpi.first.cscore.UsbCamera;
 import edu.wpi.first.cscore.VideoMode;
@@ -53,6 +59,8 @@ static int isRunning;
 public class Robot extends TimedRobot {
 
   private Command m_autonomousCommand;
+
+  Thread m_visionThread;
   
   private final RobotContainer m_robotContainer;
 
@@ -64,13 +72,54 @@ public class Robot extends TimedRobot {
     // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
     // autonomous chooser on the dashboard.
     m_robotContainer = new RobotContainer();
-    CameraServer.startAutomaticCapture();
+    /*m_visionThread =
+        new Thread(
+            () -> {
+              // Create an HTTP camera. The address will need to be modified to have the correct
+              // team number. The exact path will depend on the source.
+              HttpCamera camera =
+                  new HttpCamera("HTTP Camera", "http://10.106.23.2/video/stream.mjpg");
+              // Start capturing images
+              CameraServer.startAutomaticCapture(camera);
+              // Set the resolution
+              camera.setResolution(1280, 720);
+
+              // Get a CvSink. This will capture Mats from the camera
+              CvSink cvSink = CameraServer.getVideo();
+              // Setup a CvSource. This will send images back to the Dashboard
+              CvSource outputStream = CameraServer.putVideo("Rectangle", 1280, 720);
+
+              // Mats are very memory expensive. Lets reuse this Mat.
+              Mat mat = new Mat();
+
+              // This cannot be 'true'. The program will never exit if it is. This
+              // lets the robot stop this thread when restarting robot code or
+              // deploying.
+              while (!Thread.interrupted()) {
+                // Tell the CvSink to grab a frame from the camera and put it
+                // in the source mat.  If there is an error notify the output.
+                if (cvSink.grabFrame(mat) == 0) {
+                  // Send the output the error.
+                  outputStream.notifyError(cvSink.getError());
+                  // skip the rest of the current iteration
+                  continue;
+                }
+                // Put a rectangle on the image
+                Imgproc.rectangle(
+                    mat, new Point(100, 100), new Point(400, 400), new Scalar(255, 255, 255), 5);
+                // Give the output stream a new image to display
+                outputStream.putFrame(mat);
+              }
+            });
+    m_visionThread.setDaemon(true);
+    m_visionThread.start();*/
   }
   
   //basınç sensörü kullanımı
   private AnalogInput pressureSensor;
 
   UsbCamera cam;
+  MjpegServer frontCamServer;
 
   // joyistick tanımlamaları
   private Joystick joystick;
@@ -137,18 +186,20 @@ public class Robot extends TimedRobot {
 
     pneumatic = new PneumaticSystem();
 
-    cam = new UsbCamera("USB Camera 1", 1);
-    CameraServer.startAutomaticCapture(cam);
+    cam = new UsbCamera("USB Camera 1", 0);
     cam.setConnectionStrategy(VideoSource.ConnectionStrategy.kKeepOpen);
     cam.setVideoMode(PixelFormat.kMJPEG, 1280, 720, 30);
     cam.setResolution(1280, 720);
     cam.setFPS(30);
+    cam.setExposureManual(10);
+    cam.setWhiteBalanceManual(50);
+    CameraServer.startAutomaticCapture(cam);
+
     MjpegServer frontCamServer = CameraServer.addServer("gripStream");
     frontCamServer.setResolution(1280, 720);
     frontCamServer.setFPS(30);
     frontCamServer.setSource(cam);
   }
-
 
   @Override
   public void robotPeriodic() {
